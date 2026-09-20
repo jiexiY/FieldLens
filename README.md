@@ -2,7 +2,7 @@
 
 Environmental context before a campus journey, designed with blind and low-vision travelers in mind. **Preparation, not navigation or obstacle detection.**
 
-**Public website:** https://fieldlens-pi.vercel.app/ (the hosting address and GitHub repository retain their original names).
+**Public website:** https://reallens-app.vercel.app/ · Vercel project: `reallens`. The GitHub repository remains `jiexiY/FieldLens`; the old `fieldlens-pi.vercel.app` address is retained for existing links.
 
 ## Current multi-page product flow
 
@@ -100,11 +100,11 @@ Use noncommercially under the free plan with the visible elevenlabs.io attributi
 
 A working environmental field-study prototype of **Lake Alice, Gainesville, Florida** for the CityCamp NASA and Environmental Data Track. For Gainesville students and curious neighbors: explore a real landscape, compare dated satellite evidence, and record what you can—and cannot—conclude.
 
-**Live demo:** https://fieldlens-pi.vercel.app/
+**Live demo:** https://reallens-app.vercel.app/
 
 ## Deployment
 
-The GitHub repository is [jiexiY/FieldLens](https://github.com/jiexiY/FieldLens). Vercel's existing `fieldlens` project is connected to its `main` production branch. Pushes to `main` trigger a production build; other branches can produce preview deployments. Saving local files alone does not publish them.
+The GitHub repository is [jiexiY/FieldLens](https://github.com/jiexiY/FieldLens). Vercel's `reallens` project is connected to its `main` production branch. The project ID is unchanged from the original FieldLens deployment, preserving the existing integration and environment configuration. The project domain `reallens-app.vercel.app` follows new production deployments automatically; `fieldlens-pi.vercel.app` remains available for older links. Pushes to `main` trigger a production build; other branches can produce preview deployments. Saving local files alone does not publish them.
 
 Before publishing, run `npm test`, `npm run check:journeys`, `npm run build`, and `npm run verify:build`. Review `git status` and the staged diff, commit the intended changes, then run `git push origin main`. Pull and reconcile any remote changes before pushing; do not force-push over collaborators' work. Check the resulting Vercel deployment and live site after the push.
 

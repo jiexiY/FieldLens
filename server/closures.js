@@ -3,7 +3,7 @@ import {createHash} from 'node:crypto';
 export const CLOSURE_SOURCE='https://campusclosures.ufl.edu/closure-home';
 export const NOTICE_SOURCE='https://campusclosures.ufl.edu/api/public/impact';
 export const GEOMETRY_SOURCE='https://gis.ufl.edu/Hosting/rest/services/Hosted/Closure_Polygon_view/FeatureServer/0';
-const UA='FieldLens public closure reader (https://fieldlens-pi.vercel.app)';
+const UA='RealLens public closure reader (https://reallens-app.vercel.app)';
 const TTL=10000, BACKOFF=30000, MAX_BYTES=8*1024*1024;
 
 export function plain(value){

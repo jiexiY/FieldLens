@@ -4,7 +4,7 @@ export const RTS_SOURCE='https://go-rts.com/category/rider-alerts/';
 export const RTS_CATEGORY=41;
 export const RTS_API='https://go-rts.com/wp-json/wp/v2/posts';
 const MAX_BYTES=2*1024*1024,MAX_PAGES=5,TTL=10000,BACKOFF=30000;
-const UA='FieldLens public RTS rider-alert reader (https://fieldlens-pi.vercel.app)';
+const UA='RealLens public RTS rider-alert reader (https://reallens-app.vercel.app)';
 
 export function rtsText(value){
   const entities={amp:'&',nbsp:' ',quot:'"',apos:"'",lt:'<',gt:'>',ndash:'–',mdash:'—',hellip:'…',lsquo:'‘',rsquo:'’',ldquo:'“',rdquo:'”'};

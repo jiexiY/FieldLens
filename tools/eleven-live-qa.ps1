@@ -1,7 +1,7 @@
 # Explicit production test: one short ElevenLabs TTS and one STT request.
 # STT input is generated locally with Windows speech; no microphone or secret is read.
 $ErrorActionPreference = 'Stop'
-$fieldlensOrigin = 'https://fieldlens-pi.vercel.app'
+$fieldlensOrigin = 'https://reallens-app.vercel.app'
 $fieldlensText = 'From Reitz Union to Marston tomorrow at eight A M.'
 function Invoke-FieldLensVoiceTest($payload) {
     try {
