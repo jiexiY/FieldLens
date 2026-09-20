@@ -6,6 +6,7 @@ const MAX_BODY = 900000;
 const VOICE = 'EXAVITQu4vr4xnSDxMaL'; // Sarah, a default voice (not a cloned/library voice).
 const buckets = new Map();
 const error = (status, code, message) => Object.assign(new Error(message), {status, code});
+const SAFE_PROVIDER_CODES=new Set(['invalid_api_key','invalid_api_key_prefix','missing_api_key','unauthorized','missing_permissions','insufficient_permissions','feature_not_available','subscription_required','voice_access_denied','model_access_denied','voice_not_found','model_not_found','invalid_parameters','missing_required_field','invalid_voice_settings','invalid_voice_id','unsupported_model','invalid_audio','invalid_audio_format','invalid_output_format','quota_exceeded','insufficient_credits','rate_limit_exceeded','concurrent_limit_exceeded','system_busy','internal_error','service_unavailable','maintenance','detected_unusual_activity']);
 
 export function validateWav(audio) {
   if (audio.length < 44 || audio.toString('ascii',0,4)!=='RIFF' || audio.toString('ascii',8,12)!=='WAVE' ||
@@ -60,7 +61,7 @@ async function readBody(req) {
 }
 
 function send(res,status,data){res.statusCode=status;res.setHeader('Content-Type','application/json');res.end(JSON.stringify(data));}
-export function createVoiceHandler({env=process.env,fetcher=globalThis.fetch,allow=takeAllowance}={}) {
+export function createVoiceHandler({env=process.env,fetcher=globalThis.fetch,allow=takeAllowance,report=metadata=>console.warn('FieldLens voice provider rejection',metadata)}={}) {
   return async function handler(req,res) {
     res.setHeader('Cache-Control','private, no-store');res.setHeader('X-Content-Type-Options','nosniff');
     const key=env.ELEVENLAB_API_KEY||env.ELEVENLABS_API_KEY;
@@ -92,8 +93,13 @@ export function createVoiceHandler({env=process.env,fetcher=globalThis.fetch,all
           response=await fetcher('https://api.elevenlabs.io/v1/speech-to-text',{method:'POST',headers:{'xi-api-key':key},signal:controller.signal,body:form});
         }
         if(!response.ok) {
-          let providerCode='';try{providerCode=(await response.json())?.detail?.status||'';}catch{}
-          if(response.status===429 || /quota|credit|rate_limit/.test(providerCode)) throw error(429,'provider_limit','ElevenLabs has reached its usage limit. Select Browser voice or use text.');
+          let providerCode='';try{const detail=(await response.json())?.detail;providerCode=detail?.code||detail?.status||'';}catch{}
+          // Only allowlisted codes and numeric status are logged. Never raw
+          // messages, headers, input text, audio, or provider request details.
+          report({action:input.action,status:response.status,code:SAFE_PROVIDER_CODES.has(providerCode)?providerCode:'unknown'});
+          if(['invalid_api_key','invalid_api_key_prefix','missing_api_key'].includes(providerCode))throw error(503,'provider_key','ElevenLabs rejected the saved API key. The owner needs to check that Vercel holds the full secret key, not its name or ID. Select Browser voice for now.');
+          if(response.status===402 || response.status===429 || /quota|credit|rate_limit/.test(providerCode)) throw error(429,'provider_limit','ElevenLabs has reached its usage limit. Select Browser voice or use text.');
+          if(['voice_not_found','voice_access_denied'].includes(providerCode))throw error(503,'provider_voice','The configured ElevenLabs voice is unavailable for this account. Select Browser voice for now.');
           if([401,403].includes(response.status)) throw error(503,'provider_access','ElevenLabs access is unavailable. The owner needs to check the key, speech permissions, or voice access. Select Browser voice for now.');
           throw error(502,'provider_unavailable','ElevenLabs could not complete this request. Select Browser voice or try again later.');
         }
