@@ -14,5 +14,6 @@ VOICE-QA.md
 ELEVENLABS-QA.md
 CLOSURES-QA.md
 DASHBOARD-QA.md
+HOME-PAGES-QA.md
 output/
 .playwright-cli/

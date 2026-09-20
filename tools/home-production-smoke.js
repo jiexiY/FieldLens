@@ -1,0 +1,32 @@
+async (page) => {
+  const errors=[];page.on('pageerror',error=>errors.push(error.message));
+  const base='https://fieldlens-pi.vercel.app';
+  await page.goto(base+'/');await page.waitForFunction(()=>!document.querySelector('#create')?.disabled);
+  await page.setViewportSize({width:1440,height:1000});
+  if(await page.locator('.home-action').count()!==4)throw Error('New home did not deploy');
+  await page.screenshot({path:'output/playwright/home-production.png'});
+  await page.getByLabel('Search a campus destination',{exact:true}).fill('Smathers Library');await page.getByRole('button',{name:'Choose destination',exact:true}).click();
+  const departure=await page.evaluate(()=>{const p=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(Date.now()+86400000)).map(x=>[x.type,x.value]));return `${p.year}-${p.month}-${p.day}T12:00`;});
+  await page.getByLabel('When are you leaving?',{exact:true}).fill(departure);
+  const environmentResponse=page.waitForResponse(r=>r.url().includes('/api/environment?'),{timeout:35000});
+  await page.getByRole('button',{name:'Understand my journey',exact:true}).click();
+  const environment=await(await environmentResponse).json();
+  await page.getByRole('heading',{name:'Campus closure updates',exact:true}).waitFor({timeout:35000});
+  const before=await page.locator('#closure-freshness').textContent(),started=Date.now();
+  await page.waitForFunction(previous=>document.querySelector('#closure-freshness')?.textContent!==previous,before,{timeout:40000});
+  const after=await page.locator('#closure-freshness').textContent(),elapsed=Date.now()-started;
+  if(!after.includes('Last successful source check:')||elapsed<12000)throw Error('No verified source-check advance on the normal cycle');
+  await page.getByLabel('Automatically check UF notices',{exact:true}).uncheck();
+  const badge=await page.locator('#closure-badge').textContent();
+  await page.addScriptTag({path:'node_modules/axe-core/axe.min.js'});
+  const scan=()=>page.evaluate(async()=>(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}})).violations.map(v=>({id:v.id,targets:v.nodes.map(n=>n.target)})));
+  const homeAxe=await scan();
+  await page.locator('#overview').screenshot({path:'output/playwright/home-production-journey.png'});
+  const voice=await(await page.request.get(base+'/api/voice')).json();
+  const welcomeResponse=await page.goto(base+'/welcome');await page.locator('.welcome-tiles').waitFor();
+  await page.addScriptTag({path:'node_modules/axe-core/axe.min.js'});const welcomeAxe=await scan();
+  await page.screenshot({path:'output/playwright/welcome-production.png'});
+  await page.setViewportSize({width:390,height:844});await page.screenshot({path:'output/playwright/welcome-production-mobile.png'});
+  if(homeAxe.length||welcomeAxe.length||errors.length)throw Error(JSON.stringify({homeAxe,welcomeAxe,errors}));
+  return {welcomeStatus:welcomeResponse.status(),welcomeTiles:await page.locator('.welcome-tile').count(),weather:environment.weather.status,closures:environment.closures.status,noticeCount:environment.closures.notices?.length,voiceConfigured:voice.configured,before,after,closureRefreshMs:elapsed,closureBadge:badge,homeAxe,welcomeAxe,errors,liveSources:true};
+}

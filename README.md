@@ -4,11 +4,13 @@ FieldLens is an environmental journey-briefing prototype for blind and low-visio
 
 **Live demo:** https://fieldlens-pi.vercel.app/
 
-### Dashboard design
+### Home and landing pages
 
-The campus workspace adapts the sidebar, compact toolbar, floating journey panel, neutral surfaces, and map-led hierarchy of [Md Jahidul Islam's Transportation Management Software design](https://dribbble.com/shots/27202602-Transportation-Management-Software-SaaS-Design). It is an independent implementation: no reference screenshots, streets, vehicle records, branding, or design source files are shipped.
+The main app at `/` uses the user's blue-and-white phone reference: a large heading, rounded destination search, and four white action cards. The circled category strip is omitted. `/welcome` is a separate landing page based on the user's second reference: white canvas, bold black heading, pastel tiles, and a black rounded navigation dock. The medical and smart-home content, assets, device frames, and branding are not shipped. This is an independent implementation with real FieldLens destinations and functions.
 
-The overview renders the existing attributed campus OSM extract locally, with optional zoom, fit, and hide controls. No route appears before a briefing is prepared; editing the trip clears the previous line. The line is environmental study context, not navigation or live tracking. Sidebar links lead to the overview, readable briefing, voice assistant, sources, and separate landscape explorer. All essential information remains available without map interaction. Voice service selection and full privacy details are under **Voice settings and privacy**, with an audio-processing disclosure still visible before Talk. Mobile navigation, larger text, higher contrast, keyboard access, and automatic closure checks remain supported. See [DASHBOARD-QA.md](DASHBOARD-QA.md).
+Home search accepts exact names and explicit aliases for the six supported campus places; it sets a destination and focuses trip review, without requesting conditions or guessing an unsupported place. The cards open the planner, opt-in voice assistant, relevant campus notices after preparation, and separate Lake Alice archive. Reading preferences carry between home and landing; neither landing navigation nor the voice card starts a microphone or speech request. The landing itself contacts no weather, closure, or voice APIs.
+
+The campus workspace below home preserves the previous map-led implementation, originally informed by [Md Jahidul Islam's Transportation Management Software design](https://dribbble.com/shots/27202602-Transportation-Management-Software-SaaS-Design). Its attributed local OSM overview has optional zoom, fit, and hide controls. No route appears before preparation; editing the trip clears the previous line. All essential information remains available without map interaction. The header menu links to workspace sections. Voice service selection and full privacy details remain under **Voice settings and privacy**, with disclosure visible before Talk. See [HOME-PAGES-QA.md](HOME-PAGES-QA.md) for current verification and [DASHBOARD-QA.md](DASHBOARD-QA.md) for the earlier dashboard release.
 
 ## Journey pilot
 
@@ -34,7 +36,7 @@ Failed checks retain earlier warnings marked **stale**, with their original sour
 
 ### Run, verify, and reproduce
 
-Run `npm install`, `npm run dev`, and open http://127.0.0.1:5194/. The Vite development/preview middleware provides `/api/environment` and `/api/closures`; production uses matching Vercel functions. A static file server alone cannot supply live weather and notices. Sources require network access but no API key. `npm run build` creates both page entries.
+Run `npm install`, `npm run dev`, and open http://127.0.0.1:5194/. The landing is at `/welcome` (also `/welcome.html`), and the separate archive is at `/explorer.html`. Vite development/preview middleware and a Vercel rewrite resolve `/welcome`. The middleware provides `/api/environment` and `/api/closures`; production uses matching Vercel functions. A static file server alone cannot supply live weather and notices. Sources require network access but no API key. `npm run build` creates all three page entries.
 
 Run `npm test`, `npm run check:journeys`, `node tools/check-journey-data.mjs --live`, `npm run build`, and `npm run verify:build`. See [JOURNEY-QA.md](JOURNEY-QA.md) for actual verification and untested boundaries. The build guard continues to prevent a development Google Maps key or loader from entering production.
 

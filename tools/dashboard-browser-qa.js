@@ -25,9 +25,10 @@ async (page) => {
   await page.getByLabel('Automatically check UF notices',{exact:true}).uncheck();
   assert((await page.locator('#campus-map svg').getAttribute('aria-label')).includes('Mapped study line'),'Confirmed preparation displays its study line');
   assert((await page.locator('#overview-summary').innerText()).includes('YOUR PREPARED JOURNEY'),'Overview card reflects the prepared trip');
+  await page.getByRole('button',{name:'Open navigation',exact:true}).click();
   await page.getByRole('link',{name:'Journey overview',exact:true}).click();
   await page.waitForFunction(()=>document.querySelector('.site-header nav a[aria-current]')?.getAttribute('href')==='#overview');
-  assert(true,'Sidebar current-section state follows navigation');
+  assert(true,'Home menu current-section state follows navigation');
   await page.locator('#overview').screenshot({path:'output/playwright/dashboard-prepared.png'});
   await page.addScriptTag({path:'node_modules/axe-core/axe.min.js'});
   const scans=[];
