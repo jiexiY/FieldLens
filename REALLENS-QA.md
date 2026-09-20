@@ -2,6 +2,10 @@
 
 ## Scope
 
+Opening-screen follow-up: /demo now automatically opens /welcome after two visible seconds, with immediate icon activation preserved and no microphone or audio autoplay. The browser timing/history checks are in tools/reallens-splash-qa.js; earlier manual-welcome expectations below describe the initial multi-page release.
+
+Follow-up verification: 165 unit tests, production build/guard, and nine browser assertions pass. Local measured auto-navigation was 2,102 ms. Immediate continuation and both Back paths passed; the entry flow made no API requests.
+
 Rebrand and replace the former section-based workspace with a product introduction, white welcome, four-action home, and distinct Plan, Talk, Conditions, and Bus documents. Keep the original hosting address, repository, credentials, saved preferences, public data, and archive.
 
 ## Passed locally

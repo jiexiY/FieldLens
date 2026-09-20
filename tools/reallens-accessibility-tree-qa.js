@@ -4,7 +4,7 @@ async (page) => {
  await page.goto(base+'/demo');
  let result=await cdp.send('Accessibility.getFullAXTree');
  const welcome=result.nodes.find(node=>node.role?.value==='link'&&node.name?.value==='RealLens Open home');
- if(!welcome?.description?.value.includes('four actions'))throw Error('White welcome description missing from accessibility tree');
+ if(!welcome?.description?.value.includes('automatically in two seconds'))throw Error('White welcome description missing from accessibility tree');
  checks.push('White welcome exposes its name, link role and action description');
  await page.goto(base+'/welcome');result=await cdp.send('Accessibility.getFullAXTree');
  for(const name of ['Plan a trip','Talk to RealLens','Check conditions','Bus alerts']){

@@ -3,6 +3,8 @@ async (page) => {
  const assert=(value,message)=>{if(!value)throw Error(message);checks.push(message);};
  page.on('pageerror',error=>errors.push(error.message));
  page.on('request',request=>{if(request.url().includes('/api/'))requests.push(request.url());});
+ // Hold only the splash timer for static layout scans; timing has its own suite.
+ const holdSplash=async()=>{if(await page.evaluate(()=>location.pathname==='/demo'))await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));};
  await page.route('**/api/voice',route=>route.fulfill({json:{configured:false}}));
  await page.route('**/api/transit',route=>route.fulfill({json:{status:'unavailable'}}));
  const scan=async()=>{
@@ -12,6 +14,7 @@ async (page) => {
  await page.goto(base+'/');await page.evaluate(()=>{localStorage.clear();sessionStorage.clear();});
  assert((await page.title()).startsWith('RealLens'),'Bare domain opens RealLens intro');
  await page.locator('.primary-link').first().locator('img').click();await page.waitForURL('**/demo');
+ await holdSplash();
  assert(await page.getByRole('link',{name:'RealLens Open home',exact:true}).count()===1,'White welcome has a named, native icon link');
  assert(await page.locator('h1').innerText()==='RealLens'&&await page.locator('#demo-action').evaluate(el=>el.getBoundingClientRect().width===1)&&!await page.locator('#demo-hint').isVisible(),'White screen has only product name and icon visible');
  assert(await page.evaluate(()=>getComputedStyle(document.documentElement).backgroundColor)==='rgb(255, 255, 255)','Welcome background is white');
@@ -29,6 +32,7 @@ async (page) => {
  assert(requests.length===0,'Intro, white welcome and four-block home make no data or voice requests');
  for(const route of ['/','/demo','/welcome','/plan','/conditions','/talk','/bus','/sources','/settings']){
   await page.goto(base+route);
+  await holdSplash();
   assert((await page.title()).includes('RealLens'),'Deep link title: '+route);
   for(const [width,height]of [[1440,1000],[390,844]]){
    await page.setViewportSize({width,height});await page.evaluate(()=>document.fonts.ready);
@@ -42,6 +46,7 @@ async (page) => {
  await page.getByLabel('Larger text',{exact:true}).check();await page.getByLabel('Higher contrast',{exact:true}).check();
  for(const route of ['/demo','/welcome','/plan','/conditions','/talk','/bus','/sources','/settings']){
   await page.goto(base+route);await page.setViewportSize({width:320,height:568});
+  await holdSplash();
   assert(await page.evaluate(()=>document.documentElement.dataset.contrast==='high'&&document.documentElement.dataset.reading==='large'),'Preferences persist: '+route);
   const result=await scan();assert(!result.overflow&&!result.violations.length,'Large/high contrast 320px: '+route+' '+JSON.stringify(result.violations));
  }

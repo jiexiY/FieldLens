@@ -7,7 +7,7 @@ Environmental context before a campus journey, designed with blind and low-visio
 ## Current multi-page product flow
 
 1. `/` — product introduction, evidence, limits, and icon-based **Try it out** links.
-2. `/demo` — all-white welcome with only the RealLens icon and name visible. Activate the named link to continue; no timer, microphone, or autoplay.
+2. `/demo` — all-white welcome with only the RealLens icon and name visible. Automatically opens home after two seconds; activate the named link to continue immediately. The timer pauses in a hidden tab. Navigation replaces the splash history entry to avoid a Back-button loop. No microphone or audio autoplay.
 3. `/welcome` — exactly four full-screen action blocks.
 4. Each block opens a separate document: `/plan`, `/talk`, `/conditions`, or `/bus`.
 5. `/settings` contains reading preferences; `/sources` names data, curriculum, privacy, limitations, and reproduction steps. `/project` remains an alias of the introduction. The Lake Alice archive stays separate at `/explorer.html`.
