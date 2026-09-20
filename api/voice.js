@@ -64,7 +64,7 @@ function send(res,status,data){res.statusCode=status;res.setHeader('Content-Type
 export function createVoiceHandler({env=process.env,fetcher=globalThis.fetch,allow=takeAllowance,report=metadata=>console.warn('FieldLens voice provider rejection',metadata)}={}) {
   return async function handler(req,res) {
     res.setHeader('Cache-Control','private, no-store');res.setHeader('X-Content-Type-Options','nosniff');
-    const key=env.ELEVENLAB_API_KEY||env.ELEVENLABS_API_KEY;
+    const key=env.ELEVENLAB_API_KEY||env.ELEVENLABS_API_KEY||env.ELEVENLABS_API;
     const enabled=!!key && env.FIELDLENS_ELEVENLABS_DISABLED!=='1';
     if(req.method==='GET') return send(res,200,{configured:enabled,maxSeconds:MAX_AUDIO_SECONDS,maxText:MAX_TEXT,provider:'ElevenLabs'});
     if(req.method!=='POST'){res.setHeader('Allow','GET, POST');return send(res,405,{code:'method',message:'Use a supported voice request.'});}

@@ -11,7 +11,7 @@ const output = files
   .join("\n");
 assert.ok(!output.includes('__fieldlensVoiceQA'), 'Simulated speech fixtures must not ship.');
 assert.ok(!output.includes('__fieldlensElevenQA'), 'Synthetic ElevenLabs fixtures must not ship.');
-assert.ok(!output.includes('xi-api-key') && !output.includes('api.elevenlabs.io') && !output.includes('ELEVENLAB_API_KEY'), 'ElevenLabs credentials and direct provider requests must stay server-side.');
+assert.ok(!output.includes('xi-api-key') && !output.includes('api.elevenlabs.io') && !/ELEVENLABS?_API(?:_KEY)?/.test(output), 'ElevenLabs credentials and direct provider requests must stay server-side.');
 assert.ok(
   !/AIza[\w-]{35}/.test(output),
   "A Google API credential was found in the build.",
