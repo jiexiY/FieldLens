@@ -16,6 +16,16 @@ Rebrand and replace the former section-based workspace with a product introducti
 
 ## Test realism
 
+## Production confirmation
+
+The rebrand release (commit 2e3d6a0) reached Vercel READY on the existing fieldlens-pi.vercel.app alias. All ten non-archive routes returned HTTP 200. Each of the nine distinct product/app entry-script lists matched the tested local production build.
+
+An unmocked mobile browser completed intro → icon welcome → home → plan → conditions. NWS returned a real forecast; UF returned published notices; RTS returned six posts. These are point-in-time checks, not a guarantee of future feed availability. No JavaScript errors or mobile conditions overflow occurred. Five welcome/home accessibility-tree checks also passed on production.
+
+The live voice capability response reported configured=true. This only verifies configuration; no new human microphone test or real TTS/transcription request was made for this release.
+
+## Fixture boundaries
+
 Layout/workflow checks use explicit unavailable-weather and synthetic RTS fixtures; satellite/map data is the actual bundled dataset. These fixtures are not bundled into production. The live-check script uses no network mocks, visits the complete public flow, and records real source states without treating unavailability as an all-clear.
 
 No human microphone, actual VoiceOver/NVDA device session, or blind/low-vision participant study was performed. Chromium accessibility-tree labels and automated axe results do not prove assistive-technology usability or safe travel. No submission, affiliation, endorsement, safe-route certification, obstacle detection, or live bus ETA is claimed.

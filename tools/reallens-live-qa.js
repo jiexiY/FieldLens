@@ -17,7 +17,7 @@ async (page) => {
  const bus={status:await page.locator('#transit-status').innerText(),freshness:await page.locator('#transit-freshness').innerText(),posts:await page.locator('.transit-post').count()};
  await page.goto(base+'/talk');await page.locator('#voice-title').waitFor();
  await page.waitForFunction(()=>!document.querySelector('#voice-provider option[value="elevenlabs"]').textContent.includes('checking'),{},{timeout:10000});
- const voice=await page.locator('#voice-provider option[value="elevenlabs"]').innerText();
+ const voice=await page.locator('#voice-provider option[value="elevenlabs"]').textContent();
  await page.goto(base+'/');await page.screenshot({path:'output/playwright/reallens-live-intro.png',fullPage:true});
  if(errors.length)throw Error(errors.join('; '));
  return {base,conditions,bus,voice,responses,pageErrors:errors};
