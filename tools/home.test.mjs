@@ -8,6 +8,25 @@ test('Home search never guesses unknown, partial, unavailable, or ambiguous dest
 test('Reading preferences share safe defaults across pages',()=>{assert.deepEqual(readingPreferences(null),{contrast:false,large:false,detail:'standard',rate:1});assert.deepEqual(readingPreferences({contrast:'true',large:1,detail:'invented',rate:100}),readingPreferences(null));});
 test('Landing changes preserve valid speech and detail preferences',()=>{assert.deepEqual(readingPreferences({contrast:true,large:true,detail:'short',rate:.85}),{contrast:true,large:true,detail:'short',rate:.85});});
 const page=name=>readFileSync(new URL('../'+name,import.meta.url),'utf8');
+test('Start-screen labels reference visible names and hidden concise descriptions',()=>{
+  const html=page('welcome.html');
+  assert.ok(html.includes('role="group" aria-label="Home actions"'));
+  assert.ok(html.includes('class="sr-only">FieldLens home</h1>'));
+  for(const id of ['plan','talk','conditions','bus']){
+    assert.ok(html.includes('aria-labelledby="'+id+'-label" aria-describedby="'+id+'-hint"'));
+    assert.ok(html.includes('id="'+id+'-label"'));
+    assert.ok(html.includes('id="'+id+'-hint" hidden>'));
+  }
+});
+test('Workspace home cards separate action names from their captions',()=>{
+  const script=page('src/journey.js');
+  assert.ok(script.includes('class="home-actions" role="group" aria-label="Home actions"'));
+  for(const id of ['plan','talk','notices','explore']){
+    assert.ok(script.includes('aria-labelledby="home-'+id+'-label" aria-describedby="home-'+id+'-hint"'));
+    assert.ok(script.includes('id="home-'+id+'-label"'));
+    assert.ok(script.includes('id="home-'+id+'-hint"'));
+  }
+});
 test('App entry has exactly four static action links and no promotional chrome',()=>{
   const html=page('welcome.html');
   assert.equal((html.match(/class="welcome-tile /g)||[]).length,4);

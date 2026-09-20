@@ -1,5 +1,13 @@
 # Current: minimal app start and separate project page — September 20, 2026
 
+## Screen-reader label refinement
+
+- Both app home surfaces now expose a named Home actions group. The start-screen main landmark/hidden heading is FieldLens home; the workspace main landmark is FieldLens journey workspace.
+- Each of the eight action links has an explicit name from its visible label and a separate concise description. Start-screen hints are hidden and referenced via aria-describedby, so they do not add visible paragraphs or duplicate browse-mode text.
+- No visible layout, tab order, destination, audio behavior, or backend changes.
+- 153 unit tests, production build, and bundle guard passed. `tools/home-labels-browser-qa.js` checked actual Chromium accessibility-tree names/descriptions for all eight links, grouping, the four-link start-screen keyboard order, hidden hints, no audio POST, and axe/overflow at 1440, 390, and 320 px.
+- This checks browser-exposed accessibility semantics, not actual VoiceOver/NVDA speech or participant usability.
+
 ## Scope
 
 - `/welcome`: only four screen-filling pastel links: Plan a trip, Talk to FieldLens, Check conditions, Bus alerts. No header, dock, footer, visible explanatory text, or extra controls.
