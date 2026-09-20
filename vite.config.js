@@ -1,9 +1,10 @@
 import { defineConfig,loadEnv } from 'vite';
 import environmentHandler from './api/environment.js';
 import closureHandler from './api/closures.js';
+import transitHandler from './api/transit.js';
 import {createVoiceHandler} from './api/voice.js';
 import { fileURLToPath } from 'node:url';
-const api = { name:'fieldlens-public-environment', configureServer(server){server.middlewares.use('/api/environment',(req,res)=>environmentHandler(req,res));server.middlewares.use('/api/closures',closureHandler);}, configurePreviewServer(server){server.middlewares.use('/api/environment',(req,res)=>environmentHandler(req,res));server.middlewares.use('/api/closures',closureHandler);} };
+const api = { name:'fieldlens-public-environment', configureServer(server){server.middlewares.use('/api/environment',(req,res)=>environmentHandler(req,res));server.middlewares.use('/api/closures',closureHandler);server.middlewares.use('/api/transit',transitHandler);}, configurePreviewServer(server){server.middlewares.use('/api/environment',(req,res)=>environmentHandler(req,res));server.middlewares.use('/api/closures',closureHandler);server.middlewares.use('/api/transit',transitHandler);} };
 const welcomeRoute=server=>{server.middlewares.use((req,res,next)=>{if(req.url==='/welcome'||req.url?.startsWith('/welcome?'))req.url=req.url.replace('/welcome','/welcome.html');next();});};
 export default defineConfig(({mode})=>{
 const localEnv=loadEnv(mode,process.cwd(),'ELEVENLAB');

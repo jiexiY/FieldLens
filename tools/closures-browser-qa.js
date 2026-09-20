@@ -2,6 +2,7 @@ async (page) => {
   const checks=[],errors=[],speech=[];let version=1,fail=false,empty=false,calls=0;
   const assert=(condition,message)=>{if(!condition)throw Error(message);checks.push(message);};
   page.on('pageerror',e=>errors.push(e.message));
+  await page.route('**/api/transit',r=>r.fulfill({json:{status:'available',fetchedAt:new Date().toISOString(),notices:[]}}));
   const notice=()=>({id:'999999',title:`QA fixture — campus notice version ${version}`,start:'2026-01-01',end:'2027-12-31',updated:'2026-09-20',dateWarning:false,description:'Synthetic browser-test notice; not a real closure.',location:'QA campus area',alternative:'QA travel note. Confirm with the official source.',accessibleAlternative:`QA accessibility note version ${version}. Entrance access is not independently verified.`,urgent:true,accessibilityAffected:true,types:['Sidewalk'],source:'https://campusclosures.ufl.edu/post/999999',polygons:[[[[-82.4,29.6],[-82.3,29.6],[-82.3,29.7],[-82.4,29.7],[-82.4,29.6]]]]});
   const snapshot=()=>({status:'available',geometryStatus:'available',fetchedAt:new Date().toISOString(),notices:empty?[]:[notice()],source:'https://campusclosures.ufl.edu/closure-home'});
   await page.route('**/api/environment?*',r=>r.fulfill({json:{weather:{status:'unavailable'},alerts:{status:'unavailable'},closures:snapshot()}}));

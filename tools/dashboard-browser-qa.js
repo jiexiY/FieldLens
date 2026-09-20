@@ -1,6 +1,7 @@
 async (page) => {
   const checks=[],errors=[];const assert=(ok,message)=>{if(!ok)throw Error(message);checks.push(message);};
   page.on('pageerror',e=>errors.push(e.message));
+  await page.route('**/api/transit',r=>r.fulfill({json:{status:'available',fetchedAt:new Date().toISOString(),notices:[]}}));
   await page.route('**/api/environment?*',r=>r.fulfill({json:{weather:{status:'unavailable'},alerts:{status:'unavailable'},closures:{status:'available',geometryStatus:'available',notices:[],fetchedAt:new Date().toISOString()}}}));
   await page.route('**/api/closures',r=>r.fulfill({json:{status:'available',geometryStatus:'available',notices:[],fetchedAt:new Date().toISOString()}}));
   await page.route('**/api/voice',r=>r.fulfill({json:{configured:false}}));

@@ -7,6 +7,7 @@
   "functions": {
     "api/environment.js": { "maxDuration": 30 },
     "api/closures.js": { "maxDuration": 30 },
+    "api/transit.js": { "maxDuration": 30 },
     "api/voice.js": { "maxDuration": 30 }
   }
 }

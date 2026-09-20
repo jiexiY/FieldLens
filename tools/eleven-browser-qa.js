@@ -1,6 +1,7 @@
 async (page) => {
   const requests=[];
   const sample='output/playwright/voice-qa.wav';
+  await page.route('**/api/transit',r=>r.fulfill({json:{status:'available',fetchedAt:new Date().toISOString(),notices:[]}}));
   await page.route('**/api/voice',async route=>{
     if(route.request().method()==='GET')return route.fulfill({json:{configured:true}});
     const body=route.request().postDataJSON();requests.push({action:body.action,text:body.text,audioLength:body.audio?.length});
@@ -48,5 +49,5 @@ async (page) => {
   await page.addScriptTag({path:'node_modules/axe-core/axe.min.js'});
   const axe=await page.evaluate(async()=>{const a=await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}});return {violations:a.violations.map(v=>({id:v.id,targets:v.nodes.map(n=>n.target)})),incomplete:a.incomplete.map(v=>v.id)};});
   if(axe.violations.length)throw Error(JSON.stringify(axe));
-  return {mode:'synthetic microphone + mocked ElevenLabs; live environment data',requests,axe,passed:true};
+  return {mode:'synthetic microphone + mocked ElevenLabs and RTS; live environment data',requests,axe,passed:true};
 }

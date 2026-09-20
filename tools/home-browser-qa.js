@@ -4,6 +4,7 @@ async (page) => {
   page.on('pageerror',e=>errors.push(e.message));
   page.on('request',r=>{if(r.url().includes('/api/'))apiRequests.push({url:r.url().split('/api/')[1],method:r.method()});});
   await page.unrouteAll({behavior:'wait'});
+  await page.route('**/api/transit',r=>r.fulfill({json:{status:'available',fetchedAt:new Date().toISOString(),notices:[]}}));
   await page.route('**/api/voice',r=>r.fulfill({json:{configured:true}}));
   await page.route('**/api/environment?*',r=>r.fulfill({json:{weather:{status:'unavailable'},alerts:{status:'unavailable'},closures:{status:'available',geometryStatus:'available',notices:[],fetchedAt:new Date().toISOString()}}}));
   await page.route('**/api/closures',r=>r.fulfill({json:{status:'available',geometryStatus:'available',notices:[],fetchedAt:new Date().toISOString()}}));

@@ -15,5 +15,6 @@ ELEVENLABS-QA.md
 CLOSURES-QA.md
 DASHBOARD-QA.md
 HOME-PAGES-QA.md
+TRANSIT-QA.md
 output/
 .playwright-cli/

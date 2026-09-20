@@ -16,7 +16,7 @@ export function closureChangeText(change){
   for(const [key,label] of [['added','new'],['updated','updated'],['removed','no longer flagged for this journey']])if(change[key].length)parts.push(`${change[key].length} ${label}: ${change[key].slice(0,3).map(n=>n.title).join('; ')}${change[key].length>3?'; and more':''}`);
   return parts.length?`UF notice changes. ${parts.join('. ')}.${change.removed.length?' A notice no longer appearing is not confirmation that a path has reopened.':''}`:'';
 }
-export function createClosureMonitor({fetcher=globalThis.fetch,onData=()=>{},onState=()=>{},now=Date.now,schedule=setTimeout,unschedule=clearTimeout,interval=CLOSURE_POLL_MS}={}){
+export function createClosureMonitor({fetcher=globalThis.fetch,onData=()=>{},onState=()=>{},now=Date.now,schedule=setTimeout,unschedule=clearTimeout,interval=CLOSURE_POLL_MS,endpoint='/api/closures'}={}){
   let active=false,visible=true,online=true,enabled=true,timer=null,controller=null,epoch=0,lastAttempt=0,retryDelay=interval;
   const clear=()=>{unschedule(timer);timer=null;};
   function plan(){clear();if(active&&visible&&online&&enabled)timer=schedule(()=>void refresh(),Math.max(1000,retryDelay-(now()-lastAttempt)));}
@@ -26,7 +26,7 @@ export function createClosureMonitor({fetcher=globalThis.fetch,onData=()=>{},onS
     if(!enabled&&!manual)return;
     const token=epoch;controller=new AbortController();const request=controller;lastAttempt=now();onState('checking');
     try{
-      const r=await fetcher('/api/closures',{signal:AbortSignal.any([request.signal,AbortSignal.timeout(26000)]),headers:{Accept:'application/json'}});
+      const r=await fetcher(endpoint,{signal:AbortSignal.any([request.signal,AbortSignal.timeout(26000)]),headers:{Accept:'application/json'}});
       const data=await r.json();if(!r.ok&&data.status!=='stale'&&data.status!=='unavailable')throw Error('Invalid response');
       if(token===epoch){retryDelay=data.status==='available'?interval:Math.min(120000,Math.max(30000,retryDelay*2));onData(data,{manual});}
     }catch{if(token===epoch){retryDelay=Math.min(120000,Math.max(30000,retryDelay*2));onData({status:'unavailable',attemptedAt:new Date(now()).toISOString()},{manual});}}
