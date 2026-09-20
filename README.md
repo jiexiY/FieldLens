@@ -42,6 +42,8 @@ Browser API references: [SpeechRecognition](https://developer.mozilla.org/en-US/
 
 ### ElevenLabs speech integration
 
+**Current verification (September 20, 2026):** the integration is deployed, but ElevenLabs rejects the saved Production credential with `invalid_api_key`. The owner must replace the value of `ELEVENLAB_API_KEY` with a valid complete secret key and redeploy. The variable name itself is supported. Browser voice and the typed/form workflow remain available; successful real ElevenLabs speech and transcription are not yet verified.
+
 The voice-service selector adds ElevenLabs listening and narration while retaining Browser voice and text/form fallbacks. Set the **server-only** `ELEVENLAB_API_KEY` in Vercel Production (and optionally Preview); the plural `ELEVENLABS_API_KEY` is also accepted. Do not use a `VITE_` prefix. The app's configuration check exposes only availability, not credentials or whether the key is valid. Local development can read the same variable from ignored `.env.local`. Set `FIELDLENS_ELEVENLABS_DISABLED=1` server-side to disable the provider on a subsequent deployment.
 
 - **Listening:** Web Audio captures a mono recording only after Talk and microphone permission. Pause after speaking or press Finish speaking. The microphone stops before upload; Stop/Escape/page hide discards pending audio and cancels pending requests. Maximum recording length is 20 seconds. Silence is not uploaded. A bounded 16 kHz PCM WAV is transcribed with ElevenLabs Scribe v2. No API key or reusable provider token is sent to the browser.
