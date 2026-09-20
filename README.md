@@ -4,11 +4,15 @@ FieldLens is an environmental journey-briefing prototype for blind and low-visio
 
 **Live demo:** https://fieldlens-pi.vercel.app/
 
-### Home and landing pages
+### Start screen, project page, and workspace
 
-The main app at `/` uses the user's blue-and-white phone reference: a large heading, rounded destination search, and four white action cards. The circled category strip is omitted. `/welcome` is a separate landing page based on the user's second reference: white canvas, bold black heading, pastel tiles, and a black rounded navigation dock. The medical and smart-home content, assets, device frames, and branding are not shipped. This is an independent implementation with real FieldLens destinations and functions.
+`/welcome` is the minimal app entry: exactly four full-screen pastel action blocks—Plan a trip, Talk to FieldLens, Check conditions, and Bus alerts. No visible header, dock, footer, promotional text, or extra controls. The layout fills the available screen in a two-by-two grid at normal text sizes; enlarged text may reflow vertically to prevent clipping. The four links and their styles work without JavaScript. Stored larger-text/high-contrast preferences are read without changing them; settings remain available in the workspace. Cross-page links move keyboard focus to the requested section.
 
-Home search accepts exact names and explicit aliases for the six supported campus places; it sets a destination and focuses trip review, without requesting conditions or guessing an unsupported place. The cards open the planner, opt-in voice assistant, relevant campus notices after preparation, and separate Lake Alice archive. Reading preferences carry between home and landing; neither landing navigation nor the voice card starts a microphone or speech request. The landing itself contacts no weather, closure, or voice APIs.
+`/project` is the separate, text-rich promotional page: purpose, intended audience, workflow, public data sources, honest prototype limits, and Open FieldLens calls to action leading to `/welcome`. It contains an explicitly labeled illustrative briefing, not a live conditions report. It does not imply participant validation, obstacle detection, live bus ETAs, or provider endorsement. No analytics, signup, or new tracking was added.
+
+The existing workspace at `/` retains the blue home hub, destination search, and four white cards. The circled category strip remains omitted. Its About FieldLens links now open `/project`, and its navigation includes Start screen. The medical and smart-home reference content, assets, device frames, and branding are not shipped.
+
+Home search accepts exact names and explicit aliases for the six supported campus places; it sets a destination and focuses trip review, without requesting conditions or guessing an unsupported place. The workspace cards open the planner, opt-in voice assistant, relevant campus notices after preparation, and separate Lake Alice archive. Neither the start nor project page contacts environment, closure, transit, or voice APIs. Following an action into the workspace retains its existing data behavior; navigation never starts a microphone or speech request.
 
 The campus workspace below home preserves the previous map-led implementation, originally informed by [Md Jahidul Islam's Transportation Management Software design](https://dribbble.com/shots/27202602-Transportation-Management-Software-SaaS-Design). Its attributed local OSM overview has optional zoom, fit, and hide controls. No route appears before preparation; editing the trip clears the previous line. All essential information remains available without map interaction. The header menu links to workspace sections. Voice service selection and full privacy details remain under **Voice settings and privacy**, with disclosure visible before Talk. See [HOME-PAGES-QA.md](HOME-PAGES-QA.md) for current verification and [DASHBOARD-QA.md](DASHBOARD-QA.md) for the earlier dashboard release.
 
@@ -48,7 +52,7 @@ Choose **Listen to RTS updates**, or ask **“bus alerts”**, **“bus alerts f
 
 ### Run, verify, and reproduce
 
-Run `npm install`, `npm run dev`, and open http://127.0.0.1:5194/. The landing is at `/welcome` (also `/welcome.html`), and the separate archive is at `/explorer.html`. Vite development/preview middleware and a Vercel rewrite resolve `/welcome`. The middleware provides `/api/environment`, `/api/closures`, and `/api/transit`; production uses matching Vercel functions. A static file server alone cannot supply live weather and notices. Sources require network access but no API key. `npm run build` creates all three page entries.
+Run `npm install`, `npm run dev`, and open http://127.0.0.1:5194/welcome. The project page is at `/project`, the workspace at `/`, and the separate archive at `/explorer.html`. Vite development/preview middleware and Vercel rewrites resolve `/welcome` and `/project`; their `.html` paths also work. The middleware provides `/api/environment`, `/api/closures`, and `/api/transit`; production uses matching Vercel functions. A static file server alone cannot supply live weather and notices. Sources require network access but no API key. `npm run build` creates all four page entries.
 
 Run `npm test`, `npm run check:journeys`, `node tools/check-journey-data.mjs --live`, `npm run build`, and `npm run verify:build`. See [JOURNEY-QA.md](JOURNEY-QA.md) for actual verification and untested boundaries. The build guard continues to prevent a development Google Maps key or loader from entering production.
 

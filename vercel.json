@@ -3,7 +3,7 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "rewrites": [{ "source": "/welcome", "destination": "/welcome.html" }],
+  "rewrites": [{ "source": "/welcome", "destination": "/welcome.html" }, { "source": "/project", "destination": "/project.html" }],
   "functions": {
     "api/environment.js": { "maxDuration": 30 },
     "api/closures.js": { "maxDuration": 30 },

@@ -29,7 +29,7 @@ async (page) => {
   assert(!apiRequests.some(r=>r.method==='POST'),'Opening the voice section does not record or request speech');
   const scans=[];
   for(const path of ['/','/welcome']){
-    await page.goto(base+path);await page.getByRole('heading',{level:1}).waitFor();
+    await page.goto(base+path);await page.getByRole('heading',{level:1}).waitFor({state:'attached'});
     await page.addScriptTag({path:'node_modules/axe-core/axe.min.js'});
     for(const width of [1440,1024,768,390,320]){
       await page.setViewportSize({width,height:1000});await page.evaluate(()=>window.scrollTo(0,0));
@@ -39,22 +39,22 @@ async (page) => {
     }
   }
   assert(!apiRequests.some(r=>r.method==='POST'),'Neither page automatically uploads audio or requests spoken output');
-  const beforeLanding=apiRequests.length;await page.reload();await page.getByRole('heading',{level:1}).waitFor();
+  const beforeLanding=apiRequests.length;await page.reload();await page.getByRole('heading',{level:1}).waitFor({state:'attached'});
   assert(apiRequests.length===beforeLanding,'Landing does not contact voice, weather, or closure APIs');
   await page.evaluate(()=>localStorage.setItem('fieldlens.journey.preferences.v1',JSON.stringify({large:false,contrast:false,detail:'short',rate:.85})));
-  await page.reload();await page.getByRole('button',{name:'Reading preferences',exact:true}).click();
+  await page.goto(base+'/');await page.getByRole('button',{name:'Reading preferences',exact:true}).click();
   await page.getByLabel('Larger text',{exact:true}).check();await page.getByLabel('Higher contrast',{exact:true}).check();await page.getByRole('button',{name:'Done',exact:true}).click();
   const prefs=await page.evaluate(()=>JSON.parse(localStorage.getItem('fieldlens.journey.preferences.v1')));
-  assert(prefs.large&&prefs.contrast&&prefs.detail==='short'&&prefs.rate===.85,'Landing preferences retain existing voice speed and detail');
+  assert(prefs.large&&prefs.contrast&&prefs.detail==='short'&&prefs.rate===.85,'App preferences retain existing voice speed and detail');
   for(const path of ['/welcome','/']){
-    await page.goto(base+path);await page.getByRole('heading',{level:1}).waitFor();await page.addScriptTag({path:'node_modules/axe-core/axe.min.js'});await page.locator('.skip-link').focus();
+    await page.goto(base+path);await page.getByRole('heading',{level:1}).waitFor({state:'attached'});await page.addScriptTag({path:'node_modules/axe-core/axe.min.js'});await page.locator(path==='/welcome'?'.welcome-tile:first-child':'.skip-link').focus();
     const high=await page.evaluate(async()=>({large:document.documentElement.dataset.reading,contrast:document.documentElement.dataset.contrast,content:document.documentElement.scrollWidth,width:innerWidth,violations:(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}})).violations.map(v=>({id:v.id,targets:v.nodes.map(n=>n.target)}))}));
     assert(high.large==='large'&&high.contrast==='high'&&high.content<=high.width&&high.violations.length===0,`Shared 320px large-text/high-contrast preferences on ${path}: ${JSON.stringify(high)}`);
   }
   await page.evaluate(()=>localStorage.removeItem('fieldlens.journey.preferences.v1'));await page.goto(base+'/welcome');
-  await page.getByRole('link',{name:'Open voice assistant',exact:true}).click();
+  await page.getByRole('link',{name:'Talk to FieldLens',exact:true}).click();
   await page.locator('#voice-title').waitFor();
-  assert(page.url().endsWith('/#voice-assistant'),'Landing voice dock opens the actual home voice assistant');
+  assert(page.url().endsWith('/#voice-assistant'),'Start-screen voice block opens the actual voice assistant');
   assert(errors.length===0,`No page errors: ${JSON.stringify(errors)}`);
   return {checks,scans};
 }

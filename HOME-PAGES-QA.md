@@ -1,4 +1,30 @@
-# Home and landing redesign — September 20, 2026
+# Current: minimal app start and separate project page — September 20, 2026
+
+## Scope
+
+- `/welcome`: only four screen-filling pastel links: Plan a trip, Talk to FieldLens, Check conditions, Bus alerts. No header, dock, footer, visible explanatory text, or extra controls.
+- Four links are present in static HTML. Styles load without JavaScript. Preferences are read only; their editor remains in the workspace.
+- `/project`: separate text-rich project/advertising page with purpose, workflow, sources, limitations, and a clearly illustrative—not current—briefing preview. Primary calls to action open `/welcome`.
+- `/`: existing workspace preserved. About links now target `/project`; navigation adds Start screen. Known section hashes explicitly receive keyboard focus on entry and hash changes.
+- No backend, environmental calculation, closure/RTS monitor, speech provider, credential, or privacy policy changes. No new analytics.
+
+## Executed local checks
+
+- 151 unit tests passed; campus-data checks, four-entry production build, and production bundle guard passed.
+- `tools/pages-browser-qa.js`: 43 checks passed. Both pages scanned at 1440×1000, 1024×768, 768×1024, 390×844, 320×568, and 844×390: no horizontal overflow or automated axe violations. Four blocks fit the viewport at all normal-size test dimensions.
+- Keyboard order is Plan, Talk, Conditions, Bus. All links arrive at the intended existing section with focus. Check conditions has a short accessible name and a separate “Choose a journey first” description.
+- App preferences carry to the start page. Large text/high contrast at 320 px and independent 200% text enlargement passed. An initial text-overflow failure was corrected by letting the grid reflow to one column when needed.
+- Both pages made zero application API requests. Following action links made no audio POST requests. Static links/project content worked with JavaScript disabled. Project page honors reduced motion.
+- Desktop and phone screenshots were inspected in ignored `output/playwright/`. New reproducible page QA complements the existing home/workspace suite.
+- `tools/home-browser-qa.js`: all 26 existing home/workspace checks passed after updating the expected start-screen structure, including shared preferences, unsupported destination handling, and no automatic voice requests.
+
+## Boundaries
+
+These are browser/automated checks, not validation with blind or low-vision participants or actual assistive technologies. No real microphone or speech-quality evaluation was performed. Extreme text enlargement may scroll vertically instead of keeping four blocks inside one screen.
+
+## Earlier home and landing release
+
+The following describes the preceding design and its historical checks; its introduction/dock layout has been replaced above.
 
 ## Delivered layout and scope
 
