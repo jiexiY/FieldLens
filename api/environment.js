@@ -1,7 +1,7 @@
 // Only public, fixed-origin, read-only sources. Never forwards arbitrary URLs.
+import {getClosures as closures,plain} from '../server/closures.js';
+export {CLOSURE_SOURCE,sanitizeNotices,plain} from '../server/closures.js';
 const UA = 'FieldLens environmental journey prototype (https://fieldlens-pi.vercel.app)';
-export const CLOSURE_SOURCE = 'https://campusclosures.ufl.edu/closure-home';
-const GEOMETRY_SOURCE = 'https://gis.ufl.edu/Hosting/rest/services/Hosted/Closure_Polygon_view/FeatureServer/0';
 const cache = new Map();
 const TTL = 5 * 60 * 1000;
 async function json(url) {
@@ -18,26 +18,6 @@ async function cached(key, fn) {
   if (cache.size > 100) cache.clear();
   cache.set(key, { time:Date.now(), value });
   return value;
-}
-export function plain(value) {
-  return String(value ?? '').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi,'').replace(/<[^>]*>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/\s+/g,' ').trim().slice(0,4000);
-}
-export function sanitizeNotices(data, geometry) {
-  if (!Array.isArray(data) || !Array.isArray(geometry.features) || geometry.exceededTransferLimit) throw new Error('Incomplete closure data');
-  return data.filter(n => ['PUBLISHED','PROMOTED'].includes(n.STATUS)).map(n => ({
-    id:String(n.ID), title:plain(n.IMPACT_NAME) || 'UF campus closure', start:n.START_DATE || null, end:n.END_DATE || null,
-    updated:plain(n.DATEMOD) || null, description:plain(n.INFO), location:plain(n.LOCATION), alternative:plain(n.ALT_TRAVEL),
-    accessibleAlternative:plain(n.ADA_ROUTE), source:`https://campusclosures.ufl.edu/post/${encodeURIComponent(n.ID)}`,
-    polygons:geometry.features.filter(f=>String(f.attributes.close_id) === String(n.ID)).flatMap(f=>f.geometry?.rings ? [f.geometry.rings] : [])
-  }));
-}
-async function closures() {
-  return cached('closures', async () => {
-    const parameters = new URLSearchParams({where:"close_stat IN ('PUBLISHED','PROMOTED')",outFields:'close_id',outSR:'4326',f:'json'});
-    const [notices, geometry] = await Promise.all([json('https://campusclosures.ufl.edu/api/public/impact'),json(`${GEOMETRY_SOURCE}/query?${parameters}`)]);
-    return { status:'available', fetchedAt:new Date().toISOString(), source:CLOSURE_SOURCE, geometrySource:GEOMETRY_SOURCE,
-      notices:sanitizeNotices(notices,geometry) };
-  });
 }
 async function weather(lat, lon) {
   return cached(`weather:${lat},${lon}`, async () => {

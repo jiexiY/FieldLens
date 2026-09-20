@@ -95,5 +95,5 @@ export function mountVoiceAssistant({root,getDuration,onConfirm,getAnswer,speak,
   root.querySelectorAll('[data-question]').forEach(button=>button.addEventListener('click',()=>accept(button.dataset.question)));
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&(recognition||cloud.active||isSpeaking()))stop();});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});host.addEventListener('pagehide',stop);
-  return {invalidate,stop,speechError:status,updateSpeechState(active){$('#voice-read').textContent=active?'Stop audio':'Read reply aloud';},pauseMicrophone:endMicrophone};
+  return {invalidate,stop,speechError:status,conditionsChanged(message){if(pending||busy)return;lastReply='';$('#voice-conversation').hidden=true;status(message);},updateSpeechState(active){$('#voice-read').textContent=active?'Stop audio':'Read reply aloud';},pauseMicrophone:endMicrophone};
 }

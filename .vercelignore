@@ -12,5 +12,6 @@ REFINEMENT.md
 JOURNEY-QA.md
 VOICE-QA.md
 ELEVENLABS-QA.md
+CLOSURES-QA.md
 output/
 .playwright-cli/

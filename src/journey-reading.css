@@ -19,6 +19,7 @@
 .brand-mark, .icon-button { flex-shrink: 0; }
 /* Theme changes must not briefly animate through a low-contrast button state. */
 .button { transition: none; }
+[data-contrast=high] .skip-link { color: #071b0d; }
 @media (max-width: 600px) {
   .weather-metrics { grid-template-columns: 1fr; padding: 0; }
   .weather-metrics > div, .weather-metrics > div:first-child,

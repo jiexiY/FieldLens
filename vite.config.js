@@ -1,8 +1,9 @@
 import { defineConfig,loadEnv } from 'vite';
 import environmentHandler from './api/environment.js';
+import closureHandler from './api/closures.js';
 import {createVoiceHandler} from './api/voice.js';
 import { fileURLToPath } from 'node:url';
-const api = { name:'fieldlens-public-environment', configureServer(server){server.middlewares.use('/api/environment',(req,res)=>environmentHandler(req,res));}, configurePreviewServer(server){server.middlewares.use('/api/environment',(req,res)=>environmentHandler(req,res));} };
+const api = { name:'fieldlens-public-environment', configureServer(server){server.middlewares.use('/api/environment',(req,res)=>environmentHandler(req,res));server.middlewares.use('/api/closures',closureHandler);}, configurePreviewServer(server){server.middlewares.use('/api/environment',(req,res)=>environmentHandler(req,res));server.middlewares.use('/api/closures',closureHandler);} };
 export default defineConfig(({mode})=>{
 const localEnv=loadEnv(mode,process.cwd(),'ELEVENLAB');
 const voiceHandler=createVoiceHandler({env:{...localEnv,...process.env}});

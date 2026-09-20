@@ -16,9 +16,19 @@ FieldLens is an environmental journey-briefing prototype for blind and low-visio
 
 The optional map is secondary. The earlier Lake Alice LiDAR/satellite explorer is preserved at **/explorer.html** and is geographically separate from the campus briefing.
 
+### Automatic campus closure checks
+
+After a briefing is prepared, FieldLens checks UF's published notices **every 15 seconds while the page is visible and online**. The closure panel shows the last successful source-check time, changed notices, a manual check button, and an automatic-check pause control. A change preserves the journey form, checklist, and open notice details. Meaningful changes receive a screen-reader status announcement; unchanged checks do not repeatedly announce or automatically play audio. “Listen to closure update” and the `closures` voice command use the latest closure snapshot, including UF accessibility and travel notes. These source notes are not independently verified detours.
+
+The server-side crawler reads the site's [public structured notice feed](https://campusclosures.ufl.edu/api/public/impact) and [official UF GIS polygons](https://gis.ufl.edu/Hosting/rest/services/Hosted/Closure_Polygon_view/FeatureServer/0), rather than scraping layout-dependent HTML. `/api/closures` is GET-only with fixed source URLs, bounded responses and pagination, a 22-second source timeout, published-field allowlisting, and no creator/user metadata or unpublished records returned. Concurrent checks coalesce within each warm server process. A 10-second warm-process cache and 5-second shared CDN cache limit requests; these are not a globally coordinated crawler or a guaranteed upstream request cap.
+
+**Near-real-time, not zero delay:** the normal detection interval includes the 15-second polling cadence, short caches, and network time. UF must publish a notice first; its publication delay is outside FieldLens's control. A closure feed is not a sensor for obstacles, flooding, pavement condition, or current entrance access. Only campus notices refresh this way; weather still refreshes with the full briefing and satellite context remains dated.
+
+Failed checks retain earlier warnings marked **stale**, with their original source-check time. Failed client checks back off to 30, 60, then 120 seconds; the server uses a 30-second failure cooldown. Data over 60 seconds old is marked stale even when checks are paused. Missing or failed geometry makes location relevance unknown instead of implying no closures. A removed/expired notice is not proof that a walkway has reopened. There is no background checking, push notification, or persistent change history after the app is closed; hidden tabs pause polling. See [CLOSURES-QA.md](CLOSURES-QA.md) for verification and limits.
+
 ### Run, verify, and reproduce
 
-Run `npm install`, `npm run dev`, and open http://127.0.0.1:5194/. The Vite development/preview middleware provides `/api/environment`; production uses `api/environment.js` as a Vercel function. A static file server alone cannot supply live weather and notices. Sources require network access but no API key. `npm run build` creates both page entries.
+Run `npm install`, `npm run dev`, and open http://127.0.0.1:5194/. The Vite development/preview middleware provides `/api/environment` and `/api/closures`; production uses matching Vercel functions. A static file server alone cannot supply live weather and notices. Sources require network access but no API key. `npm run build` creates both page entries.
 
 Run `npm test`, `npm run check:journeys`, `node tools/check-journey-data.mjs --live`, `npm run build`, and `npm run verify:build`. See [JOURNEY-QA.md](JOURNEY-QA.md) for actual verification and untested boundaries. The build guard continues to prevent a development Google Maps key or loader from entering production.
 

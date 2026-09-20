@@ -76,12 +76,13 @@ export function routeIntersects(route,rings) {
   return route.coordinates.some(p=>insidePolygon(p,rings))||route.segments.some(s=>rings.some(r=>r.some((p,i)=>i>0&&intersects(s.a,s.b,r[i-1],p))));
 }
 export function relevantClosures(route,closures,departure,duration=0) {
-  if(closures?.status!=='available')return {status:'unavailable',matches:[],unmapped:0};
+  if(!['available','stale'].includes(closures?.status)||!Array.isArray(closures.notices))return {status:'unavailable',matches:[],unmapped:0,unmappedNotices:[]};
   const day=localInput(departure).slice(0,10),lastDay=localInput(new Date(departure.getTime()+duration*60000)).slice(0,10);
   const notices=closures.notices.filter(n=>(!n.start||n.start.slice(0,10)<=lastDay)&&(!n.end||n.end.slice(0,10)>=day));
   const grouped=new Map();
   for(const n of notices)if(n.polygons.some(p=>routeIntersects(route,p)))grouped.set(n.id,n);
-  return {status:'available',matches:[...grouped.values()],unmapped:notices.filter(n=>!n.polygons.length).length,total:notices.length};
+  const unmappedNotices=notices.filter(n=>!n.polygons.length);
+  return {status:closures.status,geometryStatus:closures.geometryStatus||'available',matches:[...grouped.values()],unmapped:unmappedNotices.length,unmappedNotices,total:notices.length};
 }
 export function forecastWindow(weather,departure,duration,now=new Date()) {
   if(weather?.status!=='available')return {status:'unavailable',reason:'The weather source could not be refreshed.'};

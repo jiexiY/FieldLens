@@ -1,4 +1,5 @@
 import {localInput,parseDeparture,formatDate,timeLabel} from './journey-model.js';
+import {closureSpeech} from './closure-view.js';
 
 // Deliberately bounded language support. No geocoding, inferred safe routes, or LLM facts.
 export const VOICE_PLACES = {
@@ -91,7 +92,7 @@ export function parseVoiceIntent(value,{pending=null,duration=30,now=new Date()}
 
 export function answerFromBrief(command,b,now=new Date()){
   if(!b)return 'Prepare a journey briefing first. Tell me your starting place, destination, day, and time, or use the form.';
-  if(now-new Date(b.createdAt)>15*60000||new Date(b.departure)<now)return 'This briefing is more than 15 minutes old or its departure has passed. Refresh it with a future departure before asking about conditions.';
+  if((command!=='closures'&&now-new Date(b.createdAt)>15*60000)||new Date(b.departure)<now)return 'This briefing is more than 15 minutes old or its departure has passed. Refresh it with a future departure before asking about conditions.';
   const intro=`For ${b.origin.name} to ${b.destination.name}, ${formatDate(b.departure)} at ${timeLabel(b.departure)} Eastern: `;
   const w=b.weather;
   if(['rain','weather','wind'].includes(command)){
@@ -101,7 +102,7 @@ export function answerFromBrief(command,b,now=new Date()){
     if(command==='rain')return intro+rain+(w.rain>=30?' Consider the rain protection and footwear you normally prefer.':'');
     return intro+`${w.description||'Weather description unavailable'}. ${rain} Air temperature: ${Number.isFinite(w.low)?`${w.low===w.high?w.low:`${w.low} to ${w.high}`} degrees Fahrenheit`:'unknown'}. Wind: ${w.wind||'unknown'}.`;
   }
-  if(command==='closures')return intro+(b.closures.status!=='available'?'The closure feed could not be checked. Unknown does not mean clear.':`${b.closures.matches.length?b.closures.matches.map(n=>`${n.title}. ${n.description||n.location||'Review the official notice.'}`).join(' '):'No overlap was found in the available closure polygons. This is not an all clear.'} ${b.closures.unmapped} other date-relevant notices have no matched polygon. Check the official notices linked in the briefing.`);
+  if(command==='closures')return intro+closureSpeech(b,now);
   if(command==='surroundings')return intro+`The satellite vegetation information is from September 22, 2024. It is historical context, not current shade or a path inspection. ${b.sections.some(s=>s.steps)?'Steps are tagged on the mapped study path.':'No steps were identified in the available path tags; that does not establish step-free access.'} ${b.sections.some(s=>s.crossings)?'Crossings are mapped, but their accessibility and conditions are not verified.':''} Building entrances and the connections to the mapped path are not verified.`;
   return 'I cannot establish whether a journey is safe. Current obstacles, puddles, pavement damage, safe crossings, shade, and entrance access are not verified. FieldLens is a preparation tool, not navigation or obstacle detection. It does not recommend modifying mobility equipment.';
 }
