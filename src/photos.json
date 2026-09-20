@@ -1,0 +1,58 @@
+[
+  {
+    "id": "daylight", "title": "Water at eye level", "file": "lake-alice-daylight.jpg",
+    "originalTitle": "Lake Alice, University of Florida, Gainesville",
+    "date": "2026-08-06", "author": "Michael Rivera",
+    "source": "https://commons.wikimedia.org/wiki/File:Lake_Alice,_University_of_Florida,_Gainesville.jpg",
+    "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/71/Lake_Alice%2C_University_of_Florida%2C_Gainesville.jpg/1280px-Lake_Alice%2C_University_of_Florida%2C_Gainesville.jpg",
+    "license": "CC BY 4.0", "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "latitude": 29.642360, "longitude": -82.363480,
+    "alt": "A grassy bank and moss-draped trees beside Lake Alice, with floating vegetation and open water beyond.",
+    "caption": "A ground-level view of Lake Alice: lawn, overhanging branches, floating vegetation, and open water share the same scene.",
+    "question": "What could a single satellite pixel contain here?",
+    "insight": "The photograph makes mixed surfaces visible. A satellite pixel may combine water, leaves, and shade; an index value cannot separate all of those details.",
+    "relatedView": 0
+  },
+  {
+    "id": "shoreline", "title": "Where forest meets water", "file": "lake-alice-shoreline.jpg",
+    "originalTitle": "Lake Alice margins",
+    "date": "2022-11-11", "author": "Alexander Abair",
+    "source": "https://commons.wikimedia.org/wiki/File:Lake_Alice_margins.jpg",
+    "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c7/Lake_Alice_margins.jpg/1280px-Lake_Alice_margins.jpg",
+    "license": "CC BY 4.0", "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "latitude": 29.642783, "longitude": -82.357907,
+    "alt": "Tree trunks, palmettos, roots, and standing water at the wooded edge of Lake Alice.",
+    "caption": "Water reaches between tree trunks at the wooded margin. This is a closer look at the overlap between the lake and its forested edge.",
+    "question": "Is this patch simply water, or simply vegetation?",
+    "insight": "The categories overlap on the ground. Canopy can hide water from an overhead image, and one photograph cannot establish the usual water level or a flooding trend.",
+    "relatedView": 1
+  },
+  {
+    "id": "boardwalk", "title": "Inside the canopy", "file": "lake-alice-boardwalk.jpg",
+    "originalTitle": "Lake Alice boardwalk",
+    "date": "2022-11-11", "author": "Alexander Abair",
+    "source": "https://commons.wikimedia.org/wiki/File:Lake_Alice_boardwalk.jpg",
+    "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ec/Lake_Alice_boardwalk.jpg/1280px-Lake_Alice_boardwalk.jpg",
+    "license": "CC BY 4.0", "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "latitude": 29.643910, "longitude": -82.358015,
+    "alt": "A wooden boardwalk leads through dense trees and palmettos toward sunlight at Lake Alice.",
+    "caption": "A boardwalk threads through the woods toward Lake Alice. From below, the canopy becomes a layered space rather than a green patch.",
+    "question": "Which parts of this path disappear from above?",
+    "insight": "Ground photography reveals the understory and human access. LiDAR adds measured vertical structure, while a vegetation index describes reflected light at a much coarser scale.",
+    "relatedView": 1
+  },
+  {
+    "id": "sunset", "title": "Light changes the lake", "file": "lake-alice-sunset.jpg",
+    "originalTitle": "Lake Alice at sunset",
+    "date": "2022-11-11", "author": "Alexander Abair",
+    "source": "https://commons.wikimedia.org/wiki/File:Lake_Alice_at_sunset.jpg",
+    "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6a/Lake_Alice_at_sunset.jpg/1280px-Lake_Alice_at_sunset.jpg",
+    "license": "CC BY 4.0", "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "latitude": 29.644530, "longitude": -82.359594,
+    "alt": "Orange and pink sunset clouds reflected in Lake Alice, framed by a dark tree line.",
+    "caption": "Sunset colors reflect across Lake Alice. The apparent color of the water changes with the sky and lighting.",
+    "question": "Does a different water color mean different water quality?",
+    "insight": "Not by itself. This camera records visible light, not the near-infrared band needed for NDWI. Neither this photograph nor an NDWI value establishes water quality.",
+    "relatedView": 0
+  }
+]

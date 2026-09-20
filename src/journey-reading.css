@@ -1,0 +1,36 @@
+/* Keep explanatory evidence readable, including when larger text is enabled. */
+#app .micro, #app .planner-foot, #app .summary-bottom,
+#app .preview-topics span, #app .empty-foot, #app .trip-subtitle,
+#app .weather-metrics span, #app .weather-metrics small,
+#app .segment-label, #app .badge, #app .pilot-pill,
+#app .method-items p, #app .source-grid p, #app footer p, #app footer > span {
+  font-size: .875rem;
+}
+#app .location-field label { font-size: .875rem; }
+#app .muted, #app .journey-sections p, #app .closures-section > p,
+#app .closure-item p, #app .preparation > p, #app .unknowns p,
+#app .weather-section > p, #app .check-row, #app details p,
+#app details li, #app dialog > p { font-size: 1rem; }
+#app details summary { font-size: .9375rem; }
+#app select, #app input[type=datetime-local] { font-size: 1rem; }
+.section-heading { flex-wrap: wrap; }
+.weather-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.weather-metrics > div { overflow-wrap: anywhere; }
+.brand-mark, .icon-button { flex-shrink: 0; }
+/* Theme changes must not briefly animate through a low-contrast button state. */
+.button { transition: none; }
+@media (max-width: 600px) {
+  .weather-metrics { grid-template-columns: 1fr; padding: 0; }
+  .weather-metrics > div, .weather-metrics > div:first-child,
+  .weather-metrics > div:last-child {
+    padding: 18px 0; border-right: 0; border-bottom: 1px solid var(--line);
+  }
+  .weather-metrics > div:last-child { border-bottom: 0; }
+  .weather-metrics strong { font-size: 1.8rem; }
+  .weather-metrics strong.wind-value { font-size: 1.3rem; }
+}
+@media (max-width: 450px) {
+  .access-button span { display: none; }
+  .access-button { min-width: 46px; }
+  .hero h1 { font-size: 2rem; }
+}

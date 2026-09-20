@@ -1,0 +1,24 @@
+{
+  "source": "https://s3-us-west-2.amazonaws.com/usgs-lidar-public/FL_Peninsular_FDEM_Alachua_2018/ept.json",
+  "dataset": "FL_Peninsular_FDEM_Alachua_2018",
+  "surveyPeriod": "2018-12-05 / 2019-12-03",
+  "points": 650000,
+  "pointsBeforeDisplaySampling": 15060116,
+  "maxOctreeDepth": 10,
+  "originLongitude": -82.363,
+  "originLatitude": 29.642,
+  "originZ": 18.319999999999936,
+  "horizontalCRS": "EPSG:3857",
+  "localScale": 0.8691326176290396,
+  "width": 1000,
+  "height": 780,
+  "binaryFormat": "little-endian float32 [east metres, elevation minus originZ, south metres, LAS classification]",
+  "classificationCounts": {
+    "1": 383834,
+    "2": 240125,
+    "6": 25063,
+    "9": 772,
+    "20": 206
+  },
+  "colorNote": "Point colors can use a separate aerial mosaic or a display palette. The LAS dataset contains no RGB."
+}

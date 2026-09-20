@@ -1,0 +1,15 @@
+node_modules/
+dist/
+data-cache/
+tools/
+qa/
+.git/
+.env*
+*.log
+README.md
+QA.md
+REFINEMENT.md
+JOURNEY-QA.md
+VOICE-QA.md
+output/
+.playwright-cli/

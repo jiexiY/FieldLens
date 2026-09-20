@@ -1,0 +1,21 @@
+{
+  "name": "fieldlens",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tools/photos.test.mjs tools/workflow.test.mjs tools/google-camera.test.mjs tools/evidence.test.mjs tools/notebook.test.mjs tools/journey.test.mjs tools/voice.test.mjs",
+    "check:journeys": "node tools/check-journey-data.mjs",
+    "verify:build": "node tools/verify-build.mjs",
+    "dev": "vite --host 127.0.0.1 --port 5194 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 5194 --strictPort"
+  },
+  "dependencies": {
+    "three": "0.185.1"
+  },
+  "devDependencies": {
+    "axe-core": "^4.13.0",
+    "vite": "6.4.3"
+  }
+}
