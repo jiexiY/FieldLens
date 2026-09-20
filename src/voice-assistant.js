@@ -1,25 +1,39 @@
 import {parseVoiceIntent,draftStatus,VOICE_HELP} from './voice-model.js';
+import {createElevenInput,canCapture} from './eleven-input.js';
 import './voice-assistant.css';
 
-export function mountVoiceAssistant({root,getDuration,onConfirm,getAnswer,speak,stopSpeech,isSpeechSupported,isSpeaking,host=window}){
+export function mountVoiceAssistant({root,getDuration,onConfirm,getAnswer,speak,stopSpeech,isSpeechSupported,isSpeaking,setProvider=()=>{},host=window}){
   const $=s=>root.querySelector(s);
   const Recognition=host.SpeechRecognition||host.webkitSpeechRecognition;
   let pending=null,lastReply='',recognition=null,micToken=0,timer=null,version=0,busy=false,audioRequested=false,proposalAudio=false;
+  let provider='browser',configured=false,providerChosen=false;
   root.innerHTML=`<div class="voice-intro"><div><p class="eyebrow">YOUR JOURNEY, IN YOUR WORDS</p><h2 id="voice-title">Talk to FieldLens.</h2><p>Try “From Reitz Union to Marston tomorrow at eight A M.”</p></div><div class="voice-actions"><button type="button" class="button button-primary" id="voice-talk" aria-describedby="voice-privacy voice-support"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8"/></svg><span>Talk · microphone off</span></button><button type="button" class="button button-outline" id="voice-stop">Stop audio / microphone</button></div></div>
-    <p id="voice-privacy" class="voice-small">Tap Talk to allow your browser’s microphone prompt. Audio may be sent to its speech provider. FieldLens does not record or save audio or transcripts. One request at a time; no background listening.</p>
+    <div class="voice-provider-row"><label for="voice-provider">Voice service</label><select id="voice-provider" aria-describedby="voice-privacy voice-support"><option value="browser">Browser voice · fallback</option><option value="elevenlabs" disabled>ElevenLabs · checking connection</option></select></div>
+    <p id="voice-privacy" class="voice-small">Microphone access starts only after you tap Talk. ElevenLabs mode records up to 20 seconds in memory, then sends it through FieldLens to ElevenLabs for transcription. Reply text is also sent there to create speech. FieldLens does not persist recordings or transcripts; ElevenLabs may retain them under its policies. Browser voice uses your browser’s provider, which may also process audio remotely. Stop cancels; no background listening.</p>
+    <p class="voice-small">AI speech powered by <a href="https://elevenlabs.io" target="_blank" rel="noopener noreferrer">elevenlabs.io</a> · noncommercial prototype. <a href="https://elevenlabs.io/privacy-policy" target="_blank" rel="noopener noreferrer">ElevenLabs privacy policy</a>. Do not share sensitive information.</p>
     <p id="voice-support" class="voice-small"></p><p id="voice-status" class="voice-status" role="status" aria-live="polite" aria-atomic="true">Microphone off. Use voice or the form below.</p>
     <div id="voice-conversation" class="voice-conversation" hidden><p class="voice-transcript" id="voice-transcript"></p><h3 id="voice-reply-title">FieldLens reply</h3><div id="voice-reply" role="region" aria-labelledby="voice-reply-title" tabindex="0"></div><div class="voice-actions"><button type="button" class="button button-primary" id="voice-confirm" hidden>Confirm trip</button><button type="button" class="button button-outline" id="voice-cancel" hidden>Cancel proposed trip</button><button type="button" class="button button-outline" id="voice-read">Read reply aloud</button></div></div>
     <details class="voice-details"><summary>Type a request or see supported commands</summary><form id="voice-text-form"><label for="voice-text">Trip or briefing question</label><div class="voice-text-row"><input id="voice-text" name="request" type="text" maxlength="1000" autocomplete="off" placeholder="From Reitz to Marston tomorrow at 8 AM"><button class="button button-outline" type="submit">Send request</button></div></form><p class="voice-small">Use Reitz Union, Marston, Smathers, Turlington, the Hub, or Newell. Say today, tomorrow, or a weekday and a time with A M or P M. Duration uses the form unless you say “for 30 minutes”, for example. You must confirm before the form changes.</p><div class="voice-chips" role="group" aria-label="Briefing questions"><button type="button" data-question="help">What can I say?</button><button type="button" data-question="rain">Explain rain</button><button type="button" data-question="wind">Wind</button><button type="button" data-question="closures">Closures</button><button type="button" data-question="surroundings">Surroundings</button><button type="button" data-question="unknowns">What’s unknown?</button><button type="button" data-question="briefing">Read briefing</button></div><p class="voice-small">This is a focused command assistant, not open-ended AI or turn-by-turn navigation. Answers use the prepared briefing only. Speech input varies by browser and may require internet. The typed request and form work without a microphone.</p></details>`;
-  $('#voice-support').textContent=Recognition?'Speech input is available in this browser. Replies to spoken requests are read aloud. Tap Talk again for each reply.':'Speech input is not available in this browser. Type a request below or use the journey form. You can still read replies aloud if your browser supports it.';
-  $('#voice-talk').disabled=!Recognition;
+  const cloud=createElevenInput({host,onStatus:status,onResult:text=>accept(text,true),onError:message=>show(message,{audio:true}),onRecording(active){$('#voice-talk').querySelector('span').textContent=active?'Finish speaking':'Talk · microphone off';$('#voice-talk').setAttribute('aria-pressed',String(active));}});
+  const inputSupported=()=>provider==='elevenlabs'?canCapture(host):!!Recognition;
+  function providerUI(){
+    $('#voice-support').textContent=provider==='elevenlabs'?(canCapture(host)?'ElevenLabs selected. Pause after speaking or press Finish speaking. Every proposed trip still needs confirmation. Replies use AI speech; service errors fall back to Browser voice.':'ElevenLabs can read replies, but this browser cannot record audio. Select Browser voice or type a request.'):(Recognition?'Browser speech selected. Tap Talk for one request; replies are read aloud.':'Browser speech recognition is unavailable. Type a request or use the journey form.');
+    $('#voice-talk').disabled=busy||!inputSupported();$('#voice-read').disabled=!isSpeechSupported();
+  }
+  providerUI();
+  $('#voice-provider').addEventListener('change',()=>{providerChosen=true;stop();provider=$('#voice-provider').value==='elevenlabs'&&configured?'elevenlabs':'browser';setProvider(provider);providerUI();status(`${provider==='elevenlabs'?'ElevenLabs':'Browser voice'} selected. Microphone off.`);});
+  void (async()=>{try{const response=await host.fetch('/api/voice',{signal:AbortSignal.timeout(6000)});const data=await response.json();configured=response.ok&&data.configured===true;}catch{}
+    const option=$('#voice-provider option[value="elevenlabs"]');option.disabled=!configured;option.textContent=configured?'ElevenLabs · AI speech':'ElevenLabs · unavailable here';
+    if(configured&&!providerChosen){provider='elevenlabs';$('#voice-provider').value=provider;setProvider(provider);}providerUI();
+  })();
   $('#voice-read').disabled=!isSpeechSupported();
   function status(text){$('#voice-status').textContent=text;}
   function show(message,{audio=false,spoken=message}={}){
     lastReply=spoken;$('#voice-conversation').hidden=false;$('#voice-reply').textContent=message;
     if(audio){status('Reply ready. Microphone off.');speak(spoken);}else{status('Reply ready. Microphone off; choose Read reply aloud if you want audio.');$('#voice-reply').focus({preventScroll:true});}
   }
-  function updateDraft(){const result=pending?draftStatus(pending):null;$('#voice-confirm').hidden=!result?.ready;$('#voice-confirm').disabled=busy;$('#voice-talk').disabled=busy||!Recognition;$('#voice-cancel').hidden=!pending;}
-  function endMicrophone(){micToken++;clearTimeout(timer);timer=null;const old=recognition;recognition=null;if(old){old.onresult=null;old.onerror=null;old.onend=null;try{old.abort();}catch{}}$('#voice-talk').querySelector('span').textContent='Talk · microphone off';$('#voice-talk').setAttribute('aria-pressed','false');}
+  function updateDraft(){const result=pending?draftStatus(pending):null;$('#voice-confirm').hidden=!result?.ready;$('#voice-confirm').disabled=busy;$('#voice-talk').disabled=busy||!inputSupported();$('#voice-cancel').hidden=!pending;}
+  function endMicrophone(){micToken++;cloud.cancel();clearTimeout(timer);timer=null;const old=recognition;recognition=null;if(old){old.onresult=null;old.onerror=null;old.onend=null;try{old.abort();}catch{}}$('#voice-talk').querySelector('span').textContent='Talk · microphone off';$('#voice-talk').setAttribute('aria-pressed','false');}
   function stop(){endMicrophone();stopSpeech();audioRequested=false;status('Audio and microphone stopped. Tap Talk for another request.');}
   function invalidate(){version++;pending=null;busy=false;audioRequested=false;endMicrophone();stopSpeech();updateDraft();lastReply='';$('#voice-conversation').hidden=true;status('Journey details changed. Start a new voice request or use the form.');}
   async function confirm(audio){
@@ -54,6 +68,12 @@ export function mountVoiceAssistant({root,getDuration,onConfirm,getAnswer,speak,
     show(getAnswer(command),{audio:audio||command==='briefing'});
   }
   function start(){
+    providerChosen=true;
+    if(provider==='elevenlabs'){
+      if(cloud.recording){void cloud.finish();return;}
+      if(cloud.active){endMicrophone();status('Voice request cancelled. Microphone off.');return;}
+      if(busy)return;endMicrophone();stopSpeech();void cloud.start();return;
+    }
     if(recognition){endMicrophone();status('Microphone stopped. Tap Talk to try again.');return;}
     if(!Recognition||busy)return;
     stopSpeech();const token=++micToken;let gotResult=false;
@@ -73,7 +93,7 @@ export function mountVoiceAssistant({root,getDuration,onConfirm,getAnswer,speak,
   $('#voice-read').addEventListener('click',()=>{endMicrophone();if(isSpeaking())stopSpeech();else speak(lastReply||VOICE_HELP);});
   $('#voice-text-form').addEventListener('submit',event=>{event.preventDefault();accept($('#voice-text').value);$('#voice-text').value='';});
   root.querySelectorAll('[data-question]').forEach(button=>button.addEventListener('click',()=>accept(button.dataset.question)));
-  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&(recognition||isSpeaking()))stop();});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&(recognition||cloud.active||isSpeaking()))stop();});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});host.addEventListener('pagehide',stop);
   return {invalidate,stop,speechError:status,updateSpeechState(active){$('#voice-read').textContent=active?'Stop audio':'Read reply aloud';},pauseMicrophone:endMicrophone};
 }

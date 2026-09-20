@@ -28,7 +28,7 @@ Run `npm test`, `npm run check:journeys`, `node tools/check-journey-data.mjs --l
 
 This is **preparation, not navigation or obstacle detection**. It has not been tested with blind/low-vision participants or orientation-and-mobility professionals. Automated accessibility checks do not establish usability or safe travel. Contemporary sidewalk conditions, entrance accessibility, and user-designed sensory descriptions are still missing. No cane-tip or grip modifications are recommended.
 
-### Voice-assisted pilot (September 20, 2026)
+### Voice-assisted pilot (initial browser-only release, September 20, 2026)
 
 Tap **Talk** to request browser microphone access, then say “From Reitz Union to Marston tomorrow at eight A M.” FieldLens reads back a proposal and does not change the form or request journey conditions until **Confirm trip** is selected or a separate tapped voice request says “confirm”. Missing places, day, time, and A M/P M produce clarification prompts. A new full route does not inherit an old proposal’s hidden date/time. Voice duration uses the form’s displayed value unless supplied explicitly; the confirmation identifies that default.
 
@@ -39,6 +39,18 @@ Speech input uses browser `SpeechRecognition` / `webkitSpeechRecognition`; avail
 Read [VOICE-QA.md](VOICE-QA.md) for test scope. Simulated speech-service events test the interface boundary; they are not evidence of real-microphone accuracy, audio quality, or usability with blind/low-vision participants.
 
 Browser API references: [SpeechRecognition](https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition), [SpeechSynthesis](https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis).
+
+### ElevenLabs speech integration
+
+The voice-service selector adds ElevenLabs listening and narration while retaining Browser voice and text/form fallbacks. Set the **server-only** `ELEVENLAB_API_KEY` in Vercel Production (and optionally Preview); the plural `ELEVENLABS_API_KEY` is also accepted. Do not use a `VITE_` prefix. The app's configuration check exposes only availability, not credentials or whether the key is valid. Local development can read the same variable from ignored `.env.local`. Set `FIELDLENS_ELEVENLABS_DISABLED=1` server-side to disable the provider on a subsequent deployment.
+
+- **Listening:** Web Audio captures a mono recording only after Talk and microphone permission. Pause after speaking or press Finish speaking. The microphone stops before upload; Stop/Escape/page hide discards pending audio and cancels pending requests. Maximum recording length is 20 seconds. Silence is not uploaded. A bounded 16 kHz PCM WAV is transcribed with ElevenLabs Scribe v2. No API key or reusable provider token is sent to the browser.
+- **Speaking:** replies and data-based map/surroundings descriptions are segmented and narrated using ElevenLabs Flash v2.5 with a fixed default voice. Playback speed follows Reading preferences. Failure or quota exhaustion uses browser narration for the remaining text, with an explanation. Very long briefings use browser narration to conserve credits. Speech errors do not remove the visible answer.
+- **Boundaries:** this is still a deterministic command assistant, not open-ended conversation, live camera interpretation, navigation, or obstacle detection. Transcriptions must pass the existing intent parser; trips still need explicit confirmation. It does not claim that speech recognition is accurate for every user or that environmental data establishes safe travel.
+- **Privacy:** recording, transcript, and speech text are processed transiently by FieldLens and ElevenLabs. FieldLens does not persist them. ElevenLabs may log/retain them under its policies; its free plan does not provide zero retention. No voice cloning, speaker identification, geolocation, analytics, or background recording is added. Browser fallback providers may also process speech remotely.
+- **Usage controls:** `/api/voice` accepts same-origin JSON only, allowlists the provider/model/voice, validates audio headers/duration, caps each speech segment at 1,200 characters, and sanitizes provider errors. Process-local throttling adds a 40-request/18,000-character budget per IP per 10 minutes. The project's active Vercel WAF rule limits only POST `/api/voice` to 30 requests/minute/IP across instances within each region. Neither control guarantees a global spend cap: also set an ElevenLabs key usage cap, and do not enable auto top-up unintentionally. This is an anonymous demo, not an authenticated production voice service.
+
+Use noncommercially under the free plan with the visible elevenlabs.io attribution. Commercial use requires appropriate licensing. See [ElevenLabs TTS](https://elevenlabs.io/docs/api-reference/text-to-speech/convert), [STT](https://elevenlabs.io/docs/api-reference/speech-to-text/convert), [publishing terms](https://help.elevenlabs.io/hc/en-us/articles/13313564601361-Can-I-publish-the-content-I-generate-on-the-platform), and [privacy policy](https://elevenlabs.io/privacy-policy). See [ELEVENLABS-QA.md](ELEVENLABS-QA.md) for actual checks and limitations.
 
 ## Earlier Lake Alice landscape explorer
 
