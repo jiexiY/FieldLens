@@ -7,8 +7,9 @@ async (page) => {
  // permissions, media playback, or autoplay policy. Never request GPS or a mic.
  await page.addInitScript(()=>{
   const NativeAudio=window.Audio;
-  window.__realLensLiveAudio={playing:0,paused:0,seconds:0,errors:[]};
+  window.__realLensLiveAudio={playing:0,paused:0,pauseCalls:0,seconds:0,errors:[],elements:[]};
   window.Audio=function(...args){const audio=new NativeAudio(...args),state=window.__realLensLiveAudio;
+   state.elements.push(audio);const nativePause=audio.pause.bind(audio);audio.pause=()=>{state.pauseCalls++;return nativePause();};
    audio.addEventListener('playing',()=>state.playing++);
    audio.addEventListener('pause',()=>state.paused++);
    audio.addEventListener('timeupdate',()=>{state.seconds=Math.max(state.seconds,audio.currentTime);});
@@ -25,7 +26,7 @@ async (page) => {
  assert(await page.evaluate(()=>__realLensLiveAudio.playing>0&&__realLensLiveAudio.errors.length===0),'Real browser audio playback started and advanced');
  const count=responses.length;
  await page.getByRole('button',{name:'Turn voice off',exact:true}).click();
- assert(await page.evaluate(()=>__realLensLiveAudio.paused>0),'Voice off pauses active native audio');
+ assert(await page.evaluate(()=>__realLensLiveAudio.pauseCalls>0&&__realLensLiveAudio.elements.every(audio=>audio.paused)),'Voice off pauses active native audio');
  await page.reload();await page.waitForTimeout(700);
  assert(await page.getByRole('button',{name:'Turn voice on',exact:true}).isVisible()&&responses.length===count,'Off preference survives reload without another speech request');
  await page.goto('https://reallens-app.vercel.app/');

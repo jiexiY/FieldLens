@@ -12,6 +12,8 @@ Verified locally: 176 unit tests; production build and credential/fixture guard;
 
 The production speech check is tools/reallens-voice-live-qa.js. It observes native audio and real production responses without mocking the speech service, and uses neither a microphone nor device location. The sections below record earlier releases; their old audio-off defaults do not describe this follow-up.
 
+Production verified after commit 3a6e379: Vercel deployment dpl_5njUuHz1Kuvm9qV3emAi82XMpccB is READY. Both reallens-app.vercel.app and the old fieldlens-pi.vercel.app serve narration-_oDFxNWX.js. Thirteen unmocked production-browser checks passed. Two ElevenLabs page-introduction requests returned HTTP 200 audio/mpeg; native audio entered playing state and its playback time advanced. Voice off called native pause and left all created audio elements paused; reload preserved Off without another synthesis request. Intro narration, the previous three-item cleanup, the official stop catalog, mobile layout, and home axe checks passed. No real microphone, human hearing assessment, VoiceOver/NVDA session, or field GPS test was performed.
+
 Opening-screen follow-up: /demo now automatically opens /welcome after two visible seconds, with immediate icon activation preserved and no microphone or audio autoplay. The browser timing/history checks are in tools/reallens-splash-qa.js; earlier manual-welcome expectations below describe the initial multi-page release.
 
 Follow-up verification: 165 unit tests, production build/guard, and nine browser assertions pass. Local measured auto-navigation was 2,102 ms. Immediate continuation and both Back paths passed; the entry flow made no API requests.
