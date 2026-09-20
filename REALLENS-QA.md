@@ -2,6 +2,16 @@
 
 ## Scope
 
+### Default narration and stop announcements follow-up
+
+The current source adds default-on ElevenLabs page introductions, a shared persistent Voice off control, and a Play voice recovery action for browser-blocked audio. Recovery reuses the already-generated clip. Microphone input remains opt-in. All speech players share cancellation; turning voice off cannot be bypassed by a late response. RealLens does not turn on operating-system screen readers.
+
+The separate /ride page uses the official RTS Fall 2026 stop-pattern extract and explicit, foreground-only device location. It is not live vehicle tracking or an arrival service. Voice off, End journey, page hiding, and navigation stop location watches. Delayed location reminders expire; unavailable and inaccurate GPS never become confirmed arrivals.
+
+Verified locally: 176 unit tests; production build and credential/fixture guard; 71 page layout, keyboard and axe checks; 24 muted trip/workflow checks; nine splash timing/history checks; and 28 synthetic narration/GPS browser assertions. The latter cover default-on, persisted mute, autoplay recovery without duplicate synthesis, location consent, duplicate/inaccurate fixes, destination completion, expired audio, denied permission, hidden-page cancellation, and stale GPS. Synthetic fixtures are excluded from the build. These checks do not establish real bus accuracy or blind-user usability.
+
+The production speech check is tools/reallens-voice-live-qa.js. It observes native audio and real production responses without mocking the speech service, and uses neither a microphone nor device location. The sections below record earlier releases; their old audio-off defaults do not describe this follow-up.
+
 Opening-screen follow-up: /demo now automatically opens /welcome after two visible seconds, with immediate icon activation preserved and no microphone or audio autoplay. The browser timing/history checks are in tools/reallens-splash-qa.js; earlier manual-welcome expectations below describe the initial multi-page release.
 
 Follow-up verification: 165 unit tests, production build/guard, and nine browser assertions pass. Local measured auto-navigation was 2,102 ms. Immediate continuation and both Back paths passed; the entry flow made no API requests.

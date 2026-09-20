@@ -31,10 +31,11 @@ test('App entry has exactly four static action links and no promotional chrome',
   assert.doesNotMatch(html,/<header|<footer|<nav|<dialog|<p[\s>]/);
   assert.ok(html.includes('id="welcome-title"')&&html.includes('aria-labelledby="welcome-title"'));
 });
-test('Start screen only reads existing preferences and never starts data or voice',()=>{
+test('Start screen has shared default narration but never requests microphone or trip data',()=>{
   const script=page('src/welcome.js');
   assert.doesNotMatch(script,/fetch\(|getUserMedia|speechSynthesis|localStorage.setItem|setInterval/);
   assert.match(script,/readingPreferences/);
+  assert.match(script,/import '.\/narration.js'/);
   assert.match(page('src/welcome.css'),/min-height:100dvh/);
 });
 test('Root product intro has icon demo links and honest boundaries',()=>{

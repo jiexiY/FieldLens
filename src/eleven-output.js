@@ -1,9 +1,9 @@
 import {createSpeechPlayer,speechChunks} from './speech-output.js';
 
-export function createHybridSpeechPlayer({host=window,onState=()=>{},onError=()=>{},onNotice=()=>{},fetcher=host.fetch.bind(host)}={}){
-  let provider='browser',epoch=0,active=false,controller=null,audio=null,objectUrl=null;
+export function createHybridSpeechPlayer({host=window,onState=()=>{},onError=()=>{},onNotice=()=>{},onBlocked=()=>{},fetcher=host.fetch.bind(host)}={}){
+  let provider='browser',epoch=0,active=false,controller=null,audio=null,objectUrl=null,resumePlayback=null,rejectPlayback=null;
   const browser=createSpeechPlayer({host,onState:value=>{active=value;onState(value);},onError});
-  function release(){if(audio){audio.onended=null;audio.onerror=null;audio.pause();audio.removeAttribute('src');audio.load();audio=null;}if(objectUrl){host.URL.revokeObjectURL(objectUrl);objectUrl=null;}}
+  function release(){resumePlayback=null;rejectPlayback?.(Error('Playback cancelled.'));rejectPlayback=null;if(audio){audio.onended=null;audio.onerror=null;audio.pause();audio.removeAttribute('src');audio.load();audio=null;}if(objectUrl){host.URL.revokeObjectURL(objectUrl);objectUrl=null;}}
   function cancel(){epoch++;controller?.abort();controller=null;release();browser.cancel();active=false;onState(false);}
   function speak(text,rate=1){
     cancel();if(provider!=='elevenlabs')return browser.speak(text,rate);
@@ -26,7 +26,20 @@ export function createHybridSpeechPlayer({host=window,onState=()=>{},onError=()=
           }finally{clearTimeout(timeout);}
           if(id!==epoch)return;
           release();objectUrl=host.URL.createObjectURL(blob);audio=new host.Audio(objectUrl);audio.playbackRate=rate;
-          await new Promise((resolve,reject)=>{audio.onended=resolve;audio.onerror=()=>reject(Error('Audio playback failed.'));Promise.resolve(audio.play()).catch(()=>reject(Error('Your browser blocked audio playback.')));});
+          await new Promise((resolve,reject)=>{
+            rejectPlayback=reject;audio.onended=resolve;audio.onerror=()=>reject(Error('Audio playback failed.'));
+            const play=()=>{
+              if(id!==epoch)return false;
+              resumePlayback=null;active=true;onState(true);
+              Promise.resolve(audio.play()).catch(error=>{
+                if(id!==epoch)return;
+                if(error?.name==='NotAllowedError'){
+                  active=false;onState(false);resumePlayback=play;
+                  onBlocked('Your browser needs a tap before audio can play. Choose Play voice.');
+                }else reject(Error('Audio playback failed.'));
+              });return true;
+            };play();
+          });
         }catch(e){
           if(id!==epoch)return;release();controller=null;
           onNotice(`${e.name==='AbortError'?'ElevenLabs timed out.':e.message} Using Browser voice for the remaining reply.`);
@@ -38,5 +51,5 @@ export function createHybridSpeechPlayer({host=window,onState=()=>{},onError=()=
     })();
     return true;
   }
-  return {speak,cancel,setProvider(value){cancel();provider=value==='elevenlabs'?'elevenlabs':'browser';},get supported(){return browser.supported||(provider==='elevenlabs'&&!!host.Audio);},get active(){return active;}};
+  return {speak,cancel,resume:()=>resumePlayback?.()||false,get waiting(){return !!resumePlayback;},setProvider(value){cancel();provider=value==='elevenlabs'?'elevenlabs':'browser';},get supported(){return browser.supported||(provider==='elevenlabs'&&!!host.Audio);},get active(){return active;}};
 }

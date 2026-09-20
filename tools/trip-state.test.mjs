@@ -28,7 +28,7 @@ test('Saved draft refreshes expired departure and denied storage fails safely',(
  assert.deepEqual(readDraft(denied,now),d);assert.equal(queueTrip(denied,d,now),false);assert.equal(consumeTrip(denied,now),null);
 });
 const page=file=>readFileSync(new URL('../'+file,import.meta.url),'utf8');
-test('White welcome retains its native named link and does not autoplay audio or request a microphone',()=>{
+test('White welcome retains its native named link and never requests a microphone',()=>{
  const html=page('demo.html');
  assert.match(html,/href="\/welcome" aria-labelledby="demo-title demo-action" aria-describedby="demo-hint"/);
  assert.equal((html.match(/<a /g)||[]).length,1);

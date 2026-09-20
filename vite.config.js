@@ -5,7 +5,7 @@ import transitHandler from './api/transit.js';
 import {createVoiceHandler} from './api/voice.js';
 import { fileURLToPath } from 'node:url';
 const api = { name:'fieldlens-public-environment', configureServer(server){server.middlewares.use('/api/environment',(req,res)=>environmentHandler(req,res));server.middlewares.use('/api/closures',closureHandler);server.middlewares.use('/api/transit',transitHandler);}, configurePreviewServer(server){server.middlewares.use('/api/environment',(req,res)=>environmentHandler(req,res));server.middlewares.use('/api/closures',closureHandler);server.middlewares.use('/api/transit',transitHandler);} };
-const pages=['welcome','project','demo','plan','conditions','talk','bus','sources','settings'];
+const pages=['welcome','project','demo','plan','conditions','talk','bus','ride','sources','settings'];
 const pageRoutes=server=>{server.middlewares.use((req,res,next)=>{for(const name of pages){const path='/'+name;if(req.url===path||req.url?.startsWith(`${path}?`))req.url=req.url.replace(path,`${path}.html`);}next();});};
 export default defineConfig(({mode})=>{
 const localEnv=loadEnv(mode,process.cwd(),'ELEVENLAB');

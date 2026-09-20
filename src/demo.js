@@ -1,7 +1,7 @@
 import './welcome.js';
 
 // Replace the splash history entry so Back does not restart the opening timer.
-document.getElementById('demo-hint').textContent='Home opens automatically in two seconds. Activate the RealLens icon to continue now. Audio and microphone are off.';
+document.getElementById('demo-hint').textContent='Home opens automatically in two seconds. Activate the RealLens icon to continue now. App voice is on unless you turned it off. Microphone is off.';
 let timer;
 const cancel=()=>{window.clearTimeout(timer);timer=null;};
 const start=()=>{

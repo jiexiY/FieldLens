@@ -2,13 +2,13 @@
 
 Environmental context before a campus journey, designed with blind and low-vision travelers in mind. **Preparation, not navigation or obstacle detection.**
 
-**Public website:** https://reallens-app.vercel.app/ · Vercel project: `reallens`. The GitHub repository remains `jiexiY/FieldLens`; the old `fieldlens-pi.vercel.app` address is retained for existing links.
+**Public website:** https://reallens-app.vercel.app/ · Vercel project: `reallens`. The GitHub repository is `jiexiY/RealLens`; the old `fieldlens-pi.vercel.app` address is retained for existing links.
 
 ## Current multi-page product flow
 
 1. `/` — product introduction, evidence, limits, and icon-based **Try it out** links.
-2. `/demo` — all-white welcome with only the RealLens icon and name visible. Automatically opens home after two seconds; activate the named link to continue immediately. The timer pauses in a hidden tab. Navigation replaces the splash history entry to avoid a Back-button loop. No microphone or audio autoplay.
-3. `/welcome` — exactly four full-screen action blocks.
+2. `/demo` — white welcome with the RealLens icon and name, plus voice controls. Automatically opens home after two seconds; activate the named link to continue immediately. The timer pauses in a hidden tab. Navigation replaces the splash history entry to avoid a Back-button loop.
+3. `/welcome` — four large action blocks filling the space below accessible voice controls.
 4. Each block opens a separate document: `/plan`, `/talk`, `/conditions`, or `/bus`.
 5. `/settings` contains reading preferences; `/sources` names data, curriculum, privacy, limitations, and reproduction steps. `/project` remains an alias of the introduction. The Lake Alice archive stays separate at `/explorer.html`.
 
@@ -16,7 +16,17 @@ Plan submission passes only validated trip inputs through tab-local session stor
 
 Native links, visible input labels, programmatic descriptions, page headings, skip links, focus handling, and status announcements support device screen readers. Optional app speech is separate: microphone starts only after Talk and permission; spoken trip proposals need confirmation; typed requests stay silent unless audio is requested. Voice-page RTS questions fetch on demand. Conditions and bus pages retain their independent, visible-page notice monitors.
 
-The home and welcome have no API activity or promotional chrome. Each feature mounts only its own workspace; the old section-based controller has been replaced by shared data and briefing modules. There is no hidden all-in-one dashboard.
+Page introductions use ElevenLabs by default, including the introduction, splash, and four-block home. The accessible **Turn voice off** control cancels all speech and saves the choice in this browser. Microphone access remains opt-in. Browsers may block automatic audio; **Play voice** resumes already-generated audio without a second paid synthesis request. Output failure falls back to browser speech with a notice. This does not switch on device VoiceOver or NVDA. Each feature remains its own document.
+
+### Stop announcements
+
+`/bus` links to `/ride`. Choose an RTS route, published direction/pattern, boarding stop and later destination; **Start journey** explicitly requests device location. Coordinates are processed only in memory on the device. Only generated stop-announcement text goes through the existing server-only ElevenLabs proxy. No account, GPS upload, stored location history, new secret, or background tracking is added.
+
+The bundled public `rts-stops.json` is derived from the [official RTS Fall 2026 GTFS](https://go-rts.com/rts-data/) with `powershell -File tools/prepare-rts.ps1`: 27 routes, 56 ordered patterns, 972 stops, published feed range August 17, 2026–May 2, 2027 (individual service calendars vary). This is a scheduled stop catalog, not proof of running service, current detours, arrivals or vehicle positions. The app refuses to start outside the feed range. Regenerate and verify the extract when RTS changes it; it is not a live feed.
+
+Announcements follow only the selected sequence. Approaching: uncertainty circle within 250 m; near-stop: within 100 m with two fresh fixes at least one second apart. Fixes over 15 seconds old or with accuracy worse than 50 m are rejected. Repeated callbacks do not advance stops. No nearest-route inference, missed-stop skipping, or exact-arrival claims. Stops close together, detours and GPS jumps may still cause missed or incorrect reminders. This must not be the sole way to decide when to exit a bus.
+
+**End journey**, voice off, navigation and page hiding stop location access and pending audio. Hidden journeys require a deliberate restart with the correct boarding stop; no silent resumption. Screen locking can interrupt a browser, so background stop announcements are not promised. Unit and simulated-browser tests do not establish real bus/GPS accuracy or accessibility usability.
 
 ## Environmental track
 
@@ -32,7 +42,7 @@ See [TRACK-COMPLIANCE.md](TRACK-COMPLIANCE.md) for the requirement mapping and [
 - September 22, 2024 Sentinel-2 NDVI context derived for the campus area using an adaptation of EMERGE chapter 3, lesson 3. This is **historical vegetation context, not current shade, a pavement observation, or a safety rating**.
 - Bundled attributed OpenStreetMap geometry. A shortest connected pedestrian study line supports environmental sampling; it does not establish a suitable route, avoid closures, or verify building entrances. Endpoint gaps, steps, and crossing unknowns are disclosed.
 - Keyboard-operable forms, result focus and status announcements, larger text, higher contrast, concise detail, optional speech, browser-local saved journeys, and a downloadable text briefing with sources.
-- No account, live geolocation, analytics, or user reports. Saved places and preferences remain in the browser. Speech providers and hosting may use their normal network/logging services, as disclosed in the app.
+- No account, analytics, or user reports. The separate stop-announcement page has explicit, foreground-only device geolocation. Saved places and preferences remain in the browser. Speech providers and hosting may use their normal network/logging services, as disclosed in the app.
 
 The optional map is secondary. The earlier Lake Alice LiDAR/satellite explorer is preserved at **/explorer.html** and is geographically separate from the campus briefing.
 
@@ -54,7 +64,7 @@ The reader requests only published post IDs, category, title, body, source link,
 
 The optional route filter matches explicit route mentions, not stop/street numbers or substrings (Route 1 does not match 11). It is not a route catalog, route recommendation, or map overlay. Range, truncated, and media-containing posts retain unknown route relevance. Title-worded service posts with unknown routes remain visible; other posts such as meetings and surveys are separate, not labeled bus disruptions. The filter is saved only in this browser and never changes or gets sent with the walking journey.
 
-RTS checks run every **15 seconds while the bus page is visible and online**, with a 10-second warm-process cache, a 5-second shared CDN cache, in-flight coalescing, a 22-second source deadline, and failure backoff. There is no zero-delay guarantee or globally coordinated polling cap. RTS must publish first. Failed/over-age checks preserve earlier posts marked stale; removal is not proof of restored service. Meaningful changes create visible and polite screen-reader status notifications while preserving expanded text and keyboard focus. No background push, SMS, tracking, or automatic audio is implemented.
+RTS checks run every **15 seconds while the bus page is visible and online**, with a 10-second warm-process cache, a 5-second shared CDN cache, in-flight coalescing, a 22-second source deadline, and failure backoff. There is no zero-delay guarantee or globally coordinated polling cap. RTS must publish first. Failed/over-age checks preserve earlier posts marked stale; removal is not proof of restored service. Meaningful changes create visible and polite screen-reader status notifications while preserving expanded text and keyboard focus. Rider-alert monitoring does not track location or automatically read changed posts; there is no background push or SMS. Stop announcements are a separate, explicitly started feature.
 
 Choose **Listen to RTS updates**, or ask **“bus alerts”**, **“bus alerts for route eleven”**, or **“read bus alerts”**. Typed questions stay silent unless read-aloud is explicitly requested. Spoken requests remain opt-in through the existing voice controls. The latest RTS snapshot is used, without requiring a walking briefing; pending walking proposals still require confirmation/cancellation. A separate link opens the [official RTS predictions page](https://go-rts.com/rts-bus-prediction/). This integration does **not** supply live vehicle positions or ETAs. See [TRANSIT-QA.md](TRANSIT-QA.md).
 
@@ -91,7 +101,7 @@ The voice-service selector adds ElevenLabs listening and narration while retaini
 - **Listening:** Web Audio captures a mono recording only after Talk and microphone permission. Pause after speaking or press Finish speaking. The microphone stops before upload; Stop/Escape/page hide discards pending audio and cancels pending requests. Maximum recording length is 20 seconds. Silence is not uploaded. A bounded 16 kHz PCM WAV is transcribed with ElevenLabs Scribe v2. No API key or reusable provider token is sent to the browser.
 - **Speaking:** replies and data-based map/surroundings descriptions are segmented and narrated using ElevenLabs Flash v2.5 with a fixed default voice. Playback speed follows Reading preferences. Failure or quota exhaustion uses browser narration for the remaining text, with an explanation. Very long briefings use browser narration to conserve credits. Speech errors do not remove the visible answer.
 - **Boundaries:** this is still a deterministic command assistant, not open-ended conversation, live camera interpretation, navigation, or obstacle detection. Transcriptions must pass the existing intent parser; trips still need explicit confirmation. It does not claim that speech recognition is accurate for every user or that environmental data establishes safe travel.
-- **Privacy:** recording, transcript, and speech text are processed transiently by RealLens and ElevenLabs. RealLens does not persist them. ElevenLabs may log/retain them under its policies; its free plan does not provide zero retention. No voice cloning, speaker identification, geolocation, analytics, or background recording is added. Browser fallback providers may also process speech remotely.
+- **Privacy:** recording, transcript, and speech text are processed transiently by RealLens and ElevenLabs. RealLens does not persist them. ElevenLabs may log/retain them under its policies; its free plan does not provide zero retention. No voice cloning, speaker identification, analytics, or background recording is added. The separate stop feature uses explicitly requested, device-local foreground geolocation. Browser fallback providers may also process speech remotely.
 - **Usage controls:** `/api/voice` accepts same-origin JSON only, allowlists the provider/model/voice, validates audio headers/duration, caps each speech segment at 1,200 characters, and sanitizes provider errors. Process-local throttling adds a 40-request/18,000-character budget per IP per 10 minutes. The project's active Vercel WAF rule limits only POST `/api/voice` to 30 requests/minute/IP across instances within each region. Neither control guarantees a global spend cap: also set an ElevenLabs key usage cap, and do not enable auto top-up unintentionally. This is an anonymous demo, not an authenticated production voice service.
 
 Use noncommercially under the free plan with the visible elevenlabs.io attribution. Commercial use requires appropriate licensing. See [ElevenLabs TTS](https://elevenlabs.io/docs/api-reference/text-to-speech/convert), [STT](https://elevenlabs.io/docs/api-reference/speech-to-text/convert), [publishing terms](https://help.elevenlabs.io/hc/en-us/articles/13313564601361-Can-I-publish-the-content-I-generate-on-the-platform), and [privacy policy](https://elevenlabs.io/privacy-policy). See [ELEVENLABS-QA.md](ELEVENLABS-QA.md) for actual checks and limitations.
@@ -104,7 +114,7 @@ A working environmental field-study prototype of **Lake Alice, Gainesville, Flor
 
 ## Deployment
 
-The GitHub repository is [jiexiY/FieldLens](https://github.com/jiexiY/FieldLens). Vercel's `reallens` project is connected to its `main` production branch. The project ID is unchanged from the original FieldLens deployment, preserving the existing integration and environment configuration. The project domain `reallens-app.vercel.app` follows new production deployments automatically; `fieldlens-pi.vercel.app` remains available for older links. Pushes to `main` trigger a production build; other branches can produce preview deployments. Saving local files alone does not publish them.
+The GitHub repository is [jiexiY/RealLens](https://github.com/jiexiY/RealLens). Vercel's `reallens` project is connected to its `main` production branch. The project ID is unchanged from the original FieldLens deployment, preserving the existing integration and environment configuration. The project domain `reallens-app.vercel.app` follows new production deployments automatically; `fieldlens-pi.vercel.app` remains available for older links. Pushes to `main` trigger a production build; other branches can produce preview deployments. Saving local files alone does not publish them.
 
 Before publishing, run `npm test`, `npm run check:journeys`, `npm run build`, and `npm run verify:build`. Review `git status` and the staged diff, commit the intended changes, then run `git push origin main`. Pull and reconcile any remote changes before pushing; do not force-push over collaborators' work. Check the resulting Vercel deployment and live site after the push.
 

@@ -11,6 +11,7 @@
     { "source": "/conditions", "destination": "/conditions.html" },
     { "source": "/talk", "destination": "/talk.html" },
     { "source": "/bus", "destination": "/bus.html" },
+    { "source": "/ride", "destination": "/ride.html" },
     { "source": "/sources", "destination": "/sources.html" },
     { "source": "/settings", "destination": "/settings.html" }
   ],

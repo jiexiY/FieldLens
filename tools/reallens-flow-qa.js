@@ -3,6 +3,7 @@ async (page) => {
  const assert=(value,message)=>{if(!value)throw Error(message);checks.push(message);};
  page.on('pageerror',error=>errors.push(error.message));
  await page.addInitScript(()=>{
+  localStorage.setItem('reallens.narration.v1','off');
   window.__reallensQASpeech=0;
   if(window.speechSynthesis){window.speechSynthesis.speak=()=>{window.__reallensQASpeech++;};window.speechSynthesis.cancel=()=>{};}
  });
@@ -11,7 +12,7 @@ async (page) => {
  await page.route('**/api/closures',route=>route.fulfill({json:{status:'unavailable'}}));
  let delayTransit=false;
  await page.route('**/api/transit',async route=>{calls.transit++;if(delayTransit)await page.waitForTimeout(1200);await route.fulfill({json:{status:'available',fetchedAt:new Date().toISOString(),notices:[{id:'123',title:'QA RTS detour for Route 11',body:'Synthetic UI test only.',routes:['11'],postedAt:new Date().toISOString(),modifiedAt:new Date().toISOString()}]}});});
- await page.goto(base+'/plan');await page.evaluate(()=>{sessionStorage.clear();localStorage.clear();});await page.reload();
+ await page.goto(base+'/plan');await page.evaluate(()=>{sessionStorage.clear();localStorage.clear();localStorage.setItem('reallens.narration.v1','off');});await page.reload();
  assert(calls.environment===0,'Planning does not request weather before submit');
  await page.getByLabel('Destination',{exact:true}).selectOption('reitz');await page.getByRole('button',{name:'Check this trip’s conditions'}).click();
  assert(await page.locator('#form-error').isVisible()&&calls.environment===0,'Same-place validation stays on plan page');

@@ -2,6 +2,7 @@ async (page) => {
  const base=await page.evaluate(()=>location.origin),requests=[],errors=[],checks=[];
  const assert=(ok,message)=>{if(!ok)throw Error(message);checks.push(message);};
  page.on('pageerror',error=>errors.push(error.message));
+ await page.addInitScript(()=>localStorage.setItem('reallens.narration.v1','off'));
  page.on('request',request=>{if(request.url().includes('/api/'))requests.push(request.url());});
  await page.goto(base+'/');
  await page.locator('.primary-link').first().click();await page.waitForURL('**/demo');

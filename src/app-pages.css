@@ -1,4 +1,5 @@
 :root{scroll-behavior:auto}
+#ride-form select{width:100%;max-width:100%;min-width:0;padding:12px;font:inherit}#ride-progress{font-weight:600}#ride-list li{margin-bottom:12px}#ride-status{padding:16px;background:#e6fab9;color:#202123;border-radius:16px}#ride-fields:disabled{opacity:.65}
 .app-header{max-width:1060px;margin:auto;padding:22px 28px;display:flex;gap:20px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
 .app-header .brand{font-size:1.3rem}.app-header nav{display:flex;gap:16px;flex-wrap:wrap}.app-header a{min-height:44px;display:inline-flex;align-items:center}
 .app-main{max-width:920px;margin:0 auto;padding:44px 28px 72px;min-height:75vh}
