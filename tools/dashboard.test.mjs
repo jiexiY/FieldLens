@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {dashboardMap,overviewSummary} from '../src/dashboard-map.js';
+const campus=JSON.parse(readFileSync(new URL('../public/data/campus-osm.json',import.meta.url)));
+const places=[{id:'a',name:'Reitz Union',coord:[-82.3478,29.6463]},{id:'b',name:'Marston Library',coord:[-82.3436,29.6474]}];
+const brief={origin:places[0],destination:places[1],duration:30,route:{coordinates:places.map(p=>p.coord),metres:561},closures:{matches:[]}};
+test('campus overview uses local OSM geometry and no remote tiles or tracking',()=>{const html=dashboardMap(campus,places);assert.match(html,/<polygon/);assert.match(html,/Dated OpenStreetMap/);assert.match(html,/Reitz Union/);assert.ok(!/https?:|<image|iframe|geolocation|NaN|Infinity/.test(html));});
+test('unprepared map never presents a selected trip as a route',()=>{const html=dashboardMap(campus,places);assert.match(html,/No journey is drawn/);assert.ok(!html.includes('stroke-dasharray="9 4"'));assert.ok(!html.includes('YOUR PREPARED JOURNEY'));});
+test('prepared map labels the study line and its limitations',()=>{const html=dashboardMap(campus,places,{brief});assert.match(html,/Mapped study line from Reitz Union to Marston Library/);assert.match(html,/Not an accessible-route recommendation/);assert.match(html,/stroke-dasharray="9 4"/);});
+test('map zoom changes only the view extent',()=>{const a=dashboardMap(campus,places),b=dashboardMap(campus,places,{zoom:2});assert.ok(a.includes('viewBox="0 0 900 720"'));assert.ok(b.includes('viewBox="225 180 450 360"'));assert.equal((a.match(/<polygon/g)||[]).length,(b.match(/<polygon/g)||[]).length);});
+test('map source labels cannot inject markup',()=>{const html=dashboardMap(campus,[{...places[0],name:'<img src=x onerror=alert(1)>'},places[1]]);assert.ok(!html.includes('<img'));assert.match(html,/&lt;img/);});
+test('map failures stay explicit instead of fabricating a basemap',()=>{assert.match(dashboardMap(null,places),/unavailable/);assert.match(dashboardMap(campus,[]),/unavailable/);});
+test('overview metrics use the prepared trip without inventing an ETA',()=>{const html=overviewSummary(brief);assert.match(html,/30 min/);assert.match(html,/0\.56 km/);assert.match(html,/Your estimate/);assert.match(html,/Not a verified route/);assert.ok(!html.includes('ETA'));});
+test('overview resets to preparation instructions when the trip is cleared',()=>{const html=overviewSummary(null);assert.match(html,/Choose a journey/);assert.ok(!html.includes('YOUR PREPARED JOURNEY'));});

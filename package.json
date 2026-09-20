@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tools/photos.test.mjs tools/workflow.test.mjs tools/google-camera.test.mjs tools/evidence.test.mjs tools/notebook.test.mjs tools/journey.test.mjs tools/voice.test.mjs tools/eleven.test.mjs tools/closures.test.mjs",
+    "test": "node --test tools/photos.test.mjs tools/workflow.test.mjs tools/google-camera.test.mjs tools/evidence.test.mjs tools/notebook.test.mjs tools/journey.test.mjs tools/voice.test.mjs tools/eleven.test.mjs tools/closures.test.mjs tools/dashboard.test.mjs",
     "check:journeys": "node tools/check-journey-data.mjs",
     "verify:build": "node tools/verify-build.mjs",
     "dev": "vite --host 127.0.0.1 --port 5194 --strictPort",

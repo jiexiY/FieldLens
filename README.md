@@ -4,6 +4,12 @@ FieldLens is an environmental journey-briefing prototype for blind and low-visio
 
 **Live demo:** https://fieldlens-pi.vercel.app/
 
+### Dashboard design
+
+The campus workspace adapts the sidebar, compact toolbar, floating journey panel, neutral surfaces, and map-led hierarchy of [Md Jahidul Islam's Transportation Management Software design](https://dribbble.com/shots/27202602-Transportation-Management-Software-SaaS-Design). It is an independent implementation: no reference screenshots, streets, vehicle records, branding, or design source files are shipped.
+
+The overview renders the existing attributed campus OSM extract locally, with optional zoom, fit, and hide controls. No route appears before a briefing is prepared; editing the trip clears the previous line. The line is environmental study context, not navigation or live tracking. Sidebar links lead to the overview, readable briefing, voice assistant, sources, and separate landscape explorer. All essential information remains available without map interaction. Voice service selection and full privacy details are under **Voice settings and privacy**, with an audio-processing disclosure still visible before Talk. Mobile navigation, larger text, higher contrast, keyboard access, and automatic closure checks remain supported. See [DASHBOARD-QA.md](DASHBOARD-QA.md).
+
 ## Journey pilot
 
 - Six origin/destination choices: Reitz Union, Marston Science Library, Turlington Hall, Smathers Library, The Hub, and Newell Hall.

@@ -1,0 +1,55 @@
+async (page) => {
+  const checks=[],errors=[];const assert=(ok,message)=>{if(!ok)throw Error(message);checks.push(message);};
+  page.on('pageerror',e=>errors.push(e.message));
+  await page.route('**/api/environment?*',r=>r.fulfill({json:{weather:{status:'unavailable'},alerts:{status:'unavailable'},closures:{status:'available',geometryStatus:'available',notices:[],fetchedAt:new Date().toISOString()}}}));
+  await page.route('**/api/closures',r=>r.fulfill({json:{status:'available',geometryStatus:'available',notices:[],fetchedAt:new Date().toISOString()}}));
+  await page.route('**/api/voice',r=>r.fulfill({json:{configured:false}}));
+  await page.reload();await page.waitForFunction(()=>!document.querySelector('#create').disabled);
+  await page.setViewportSize({width:1440,height:1000});
+  await page.getByRole('heading',{name:'Understand your journey.',exact:true}).waitFor();
+  assert(await page.locator('#campus-map svg').count()===1,'Actual campus overview renders before a trip is prepared');
+  const original=await page.locator('#campus-map svg').getAttribute('viewBox');
+  await page.getByRole('button',{name:'Zoom in on campus map',exact:true}).click();
+  assert(await page.locator('#campus-map svg').getAttribute('viewBox')!==original,'Map zoom changes the visible extent');
+  await page.getByRole('button',{name:'Fit map',exact:true}).click();
+  assert(await page.locator('#campus-map svg').getAttribute('viewBox')===original,'Fit map restores the full campus extent');
+  await page.getByRole('button',{name:'Hide map',exact:true}).click();
+  assert(await page.locator('#campus-map').isHidden()&&await page.getByLabel('Starting from',{exact:true}).isVisible(),'Map can be hidden without losing the planner');
+  await page.getByRole('button',{name:'Show map',exact:true}).click();
+  await page.getByRole('heading',{name:'Understand your journey.',exact:true}).focus();
+  await page.screenshot({path:'output/playwright/dashboard-desktop.png'});
+  const departure=await page.evaluate(()=>{const d=new Date(Date.now()+86400000),p=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(d).map(x=>[x.type,x.value]));return `${p.year}-${p.month}-${p.day}T12:00`;});
+  await page.getByLabel('When are you leaving?',{exact:true}).fill(departure);
+  await page.getByRole('button',{name:'Understand my journey',exact:true}).click();
+  await page.getByRole('heading',{name:'Campus closure updates',exact:true}).waitFor();
+  await page.getByLabel('Automatically check UF notices',{exact:true}).uncheck();
+  assert((await page.locator('#campus-map svg').getAttribute('aria-label')).includes('Mapped study line'),'Confirmed preparation displays its study line');
+  assert((await page.locator('#overview-summary').innerText()).includes('YOUR PREPARED JOURNEY'),'Overview card reflects the prepared trip');
+  await page.getByRole('link',{name:'Journey overview',exact:true}).click();
+  await page.waitForFunction(()=>document.querySelector('.site-header nav a[aria-current]')?.getAttribute('href')==='#overview');
+  assert(true,'Sidebar current-section state follows navigation');
+  await page.locator('#overview').screenshot({path:'output/playwright/dashboard-prepared.png'});
+  await page.addScriptTag({path:'node_modules/axe-core/axe.min.js'});
+  const scans=[];
+  for(const width of [1440,1024,768,390,320]){
+    await page.setViewportSize({width,height:900});
+    const sizes=await page.evaluate(()=>({width:innerWidth,content:document.documentElement.scrollWidth}));
+    assert(sizes.content<=width,`No horizontal overflow at ${width}px`);
+    const result=await page.evaluate(async()=>{const r=await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}});return r.violations.map(v=>({id:v.id,targets:v.nodes.map(n=>n.target)}));});
+    if(result.length)throw Error(JSON.stringify({width,result}));scans.push({width,violations:0});
+  }
+  await page.getByRole('button',{name:'Reading preferences',exact:true}).click();
+  await page.getByLabel('Larger text',{exact:true}).check();await page.getByLabel('Higher contrast',{exact:true}).check();
+  await page.getByRole('button',{name:'Done',exact:true}).click();
+  await page.locator('.skip-link').focus();
+  const high=await page.evaluate(async()=>{const r=await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}});return {width:innerWidth,content:document.documentElement.scrollWidth,violations:r.violations.map(v=>({id:v.id,targets:v.nodes.map(n=>n.target)}))};});
+  assert(high.content<=high.width&&high.violations.length===0,`320px large-text/high-contrast layout: ${JSON.stringify(high)}`);
+  await page.locator('#main').focus();
+  await page.locator('#planner').screenshot({path:'output/playwright/dashboard-mobile.png'});
+  await page.getByLabel('Going to',{exact:true}).selectOption('marston');
+  assert(!(await page.locator('#campus-map svg').getAttribute('aria-label')).includes('Mapped study line'),'Editing the journey removes the old overview route');
+  await page.getByText('Voice settings and privacy',{exact:true}).click();
+  assert(await page.getByLabel('Voice service',{exact:true}).isVisible(),'Voice service and full privacy controls remain available');
+  assert(errors.length===0,`No uncaught page errors: ${JSON.stringify(errors)}`);
+  return {checks,scans,high,fixtureEnvironment:true};
+}
