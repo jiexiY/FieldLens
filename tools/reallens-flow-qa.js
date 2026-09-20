@@ -1,0 +1,54 @@
+async (page) => {
+ const base=await page.evaluate(()=>location.origin),checks=[],errors=[],calls={environment:0,voicePost:0,transit:0};
+ const assert=(value,message)=>{if(!value)throw Error(message);checks.push(message);};
+ page.on('pageerror',error=>errors.push(error.message));
+ await page.addInitScript(()=>{
+  window.__reallensQASpeech=0;
+  if(window.speechSynthesis){window.speechSynthesis.speak=()=>{window.__reallensQASpeech++;};window.speechSynthesis.cancel=()=>{};}
+ });
+ await page.route('**/api/voice',route=>{if(route.request().method()==='POST')calls.voicePost++;return route.fulfill({json:{configured:false}});});
+ await page.route('**/api/environment?*',route=>{calls.environment++;return route.fulfill({json:{weather:{status:'unavailable'},alerts:{status:'unavailable'},closures:{status:'unavailable'}}});});
+ await page.route('**/api/closures',route=>route.fulfill({json:{status:'unavailable'}}));
+ let delayTransit=false;
+ await page.route('**/api/transit',async route=>{calls.transit++;if(delayTransit)await page.waitForTimeout(1200);await route.fulfill({json:{status:'available',fetchedAt:new Date().toISOString(),notices:[{id:'123',title:'QA RTS detour for Route 11',body:'Synthetic UI test only.',routes:['11'],postedAt:new Date().toISOString(),modifiedAt:new Date().toISOString()}]}});});
+ await page.goto(base+'/plan');await page.evaluate(()=>{sessionStorage.clear();localStorage.clear();});await page.reload();
+ assert(calls.environment===0,'Planning does not request weather before submit');
+ await page.getByLabel('Destination',{exact:true}).selectOption('reitz');await page.getByRole('button',{name:'Check this trip’s conditions'}).click();
+ assert(await page.locator('#form-error').isVisible()&&calls.environment===0,'Same-place validation stays on plan page');
+ await page.getByLabel('Destination',{exact:true}).selectOption('marston');await page.getByRole('button',{name:'Check this trip’s conditions'}).click();await page.waitForURL('**/conditions');
+ await page.locator('#brief-title').waitFor({timeout:45000});
+ assert(calls.environment===1,'Confirmed trip hands off once to separate conditions page');
+ assert(await page.locator('#journey-form,#voice-assistant,#transit').count()===0,'Conditions has no planner, voice workspace or bus workspace');
+ assert(await page.locator('#brief-title').evaluate(el=>el===document.activeElement),'Briefing receives keyboard focus');
+ assert(await page.locator('.journey-sections>li').count()===3,'Real bundled NDVI is sampled into three path segments');
+ const evidence=await page.locator('.journey-sections').textContent();assert(evidence.includes('Length-weighted mean NDVI:')&&evidence.includes('September 22, 2024'),'Actual vegetation evidence retains date and method');
+ assert((await page.locator('.weather-section').textContent()).includes('Unavailable'),'Unavailable weather is not invented');
+ await page.getByRole('button',{name:'Save journey',exact:true}).click();
+ assert(await page.evaluate(()=>JSON.parse(localStorage.getItem('fieldlens.journey.saved.v1')).destination)==='marston','Save persists places, not weather');
+ await page.locator('#optional-map summary').click();assert(await page.locator('.study-map').count()===1,'Optional map renders actual study line');
+ await page.screenshot({path:'output/playwright/reallens-conditions-result.png',fullPage:true});
+ await page.addScriptTag({path:'node_modules/axe-core/axe.min.js'});
+ const violations=await page.evaluate(async()=>(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)})));
+ assert(!violations.length,'Prepared conditions pass axe '+JSON.stringify(violations));
+ await page.reload();assert(calls.environment===1,'Reload does not replay a consumed trip request');await page.getByRole('button',{name:'Check conditions',exact:true}).click();await page.locator('#brief-title').waitFor({timeout:45000});assert(calls.environment===2,'Explicit refresh requests a new briefing');
+ await page.goto(base+'/talk');await page.locator('#voice-talk').waitFor();
+ assert(await page.locator('#journey-form,#results,#transit').count()===0,'Talk is a separate workspace');
+ assert(calls.transit===0,'Talk does not poll RTS without a question');
+ await page.locator('.voice-details summary').click();await page.getByLabel('Trip or briefing question').fill('from Reitz Union to Marston tomorrow at eight AM');await page.getByRole('button',{name:'Send request',exact:true}).click();
+ assert(await page.getByRole('button',{name:'Confirm trip',exact:true}).isVisible()&&calls.environment===2,'Typed proposal requires explicit confirmation');
+ await page.getByRole('button',{name:'Confirm trip',exact:true}).click();await page.locator('#voice-trip-link').waitFor({state:'visible',timeout:45000});
+ assert(calls.environment===3,'Voice-page confirmation prepares real journey context');
+ assert(await page.evaluate(()=>window.__reallensQASpeech)===0&&calls.voicePost===0,'Typed trip stays silent with no microphone or cloud audio request');
+ await page.getByRole('button',{name:'Bus alerts',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#voice-reply').textContent.includes('QA RTS detour'));
+ assert(calls.transit===1,'Bus question retrieves RTS only on request');
+ delayTransit=true;await page.getByRole('button',{name:'Bus alerts',exact:true}).click();await page.getByRole('button',{name:'Stop audio / microphone',exact:true}).click();
+ await page.waitForTimeout(1400);assert((await page.locator('#voice-status').textContent()).includes('stopped'),'Stop suppresses late async voice-page answers');
+ await page.goto(base+'/bus');await page.locator('#transit-content').getByText('QA RTS detour for Route 11',{exact:true}).waitFor();
+ assert(await page.locator('#journey-form,#voice-assistant,#results').count()===0,'Bus is a separate workspace');
+ await page.getByLabel('Filter by route number (optional)').fill('11');await page.getByRole('button',{name:'Apply route filter'}).click();
+ assert((await page.locator('#transit-filter-label').textContent()).includes('11'),'Bus route filter works');
+ assert(calls.voicePost===0,'Navigation and typed workflow never request cloud speech');
+ await page.unroute('**/api/voice');await page.unroute('**/api/environment?*');await page.unroute('**/api/closures');await page.unroute('**/api/transit');
+ assert(errors.length===0,'No page JavaScript errors: '+errors.join('; '));
+ return {passed:checks.length,calls,checks};
+}

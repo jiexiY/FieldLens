@@ -14,7 +14,7 @@ export function validateWav(audio) {
       audio.readUInt16LE(22)!==1 || audio.readUInt32LE(24)!==16000 || audio.readUInt32LE(28)!==32000 ||
       audio.readUInt16LE(32)!==2 || audio.readUInt16LE(34)!==16 || audio.toString('ascii',36,40)!=='data' ||
       audio.readUInt32LE(4)!==audio.length-8 || audio.readUInt32LE(40)!==audio.length-44 || (audio.length-44)%2) {
-    throw error(400,'invalid_audio','Use a short microphone recording in FieldLens.');
+    throw error(400,'invalid_audio','Use a short microphone recording in RealLens.');
   }
   const seconds=(audio.length-44)/32000;
   if(seconds<.1 || seconds>MAX_AUDIO_SECONDS) throw error(400,'audio_length','Record between a moment and 20 seconds.');
@@ -61,7 +61,7 @@ async function readBody(req) {
 }
 
 function send(res,status,data){res.statusCode=status;res.setHeader('Content-Type','application/json');res.end(JSON.stringify(data));}
-export function createVoiceHandler({env=process.env,fetcher=globalThis.fetch,allow=takeAllowance,report=metadata=>console.warn('FieldLens voice provider rejection',metadata)}={}) {
+export function createVoiceHandler({env=process.env,fetcher=globalThis.fetch,allow=takeAllowance,report=metadata=>console.warn('RealLens voice provider rejection',metadata)}={}) {
   return async function handler(req,res) {
     res.setHeader('Cache-Control','private, no-store');res.setHeader('X-Content-Type-Options','nosniff');
     const key=env.ELEVENLAB_API_KEY||env.ELEVENLABS_API_KEY||env.ELEVENLABS_API;
@@ -73,7 +73,7 @@ export function createVoiceHandler({env=process.env,fetcher=globalThis.fetch,all
       const origin=req.headers.origin;
       let sameOrigin=false;
       try {const parsed=new URL(origin);sameOrigin=parsed.host===req.headers.host && ['https:','http:'].includes(parsed.protocol);}catch{}
-      if(!sameOrigin || (req.headers['sec-fetch-site'] && req.headers['sec-fetch-site']!=='same-origin')) throw error(403,'origin','Open FieldLens directly to use speech.');
+      if(!sameOrigin || (req.headers['sec-fetch-site'] && req.headers['sec-fetch-site']!=='same-origin')) throw error(403,'origin','Open RealLens directly to use speech.');
       if(!/^application\/json(?:;|$)/i.test(req.headers['content-type']||'')) throw error(415,'content_type','Use a JSON voice request.');
       if(!enabled) throw error(503,'not_configured','ElevenLabs is not configured here. Select Browser voice or use text.');
       const input=validateVoiceRequest(await readBody(req));

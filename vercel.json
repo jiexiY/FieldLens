@@ -3,7 +3,17 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "rewrites": [{ "source": "/welcome", "destination": "/welcome.html" }, { "source": "/project", "destination": "/project.html" }],
+  "rewrites": [
+    { "source": "/welcome", "destination": "/welcome.html" },
+    { "source": "/project", "destination": "/project.html" },
+    { "source": "/demo", "destination": "/demo.html" },
+    { "source": "/plan", "destination": "/plan.html" },
+    { "source": "/conditions", "destination": "/conditions.html" },
+    { "source": "/talk", "destination": "/talk.html" },
+    { "source": "/bus", "destination": "/bus.html" },
+    { "source": "/sources", "destination": "/sources.html" },
+    { "source": "/settings", "destination": "/settings.html" }
+  ],
   "functions": {
     "api/environment.js": { "maxDuration": 30 },
     "api/closures.js": { "maxDuration": 30 },

@@ -129,7 +129,7 @@ export function addEntry(notebook, snapshot, { id, createdAt }) {
 
 export function notebookMarkdown(notebook) {
   const lines = [
-    "# FieldLens — Lake Alice field notebook",
+    "# RealLens — Lake Alice field notebook",
     "",
     "Personal observations from an environmental learning explorer. These are not expert conclusions or independently verified field measurements.",
     "",

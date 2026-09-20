@@ -8,7 +8,7 @@ export const VOICE_PLACES = {
   hub: ['the hub','hub'], newell: ['newell hall','newell']
 };
 export const PLACE_NAMES = {reitz:'Reitz Union',marston:'Marston Science Library',turlington:'Turlington Hall',smathers:'Smathers Library',hub:'The Hub',newell:'Newell Hall'};
-export const VOICE_HELP = 'Say “from Reitz Union to Marston tomorrow at eight A M.” I will ask you to confirm before updating the form. You can also say “read briefing”, “explain rain”, “wind”, “closures”, “bus alerts”, “bus alerts for route eleven”, “surroundings”, “repeat”, “cancel”, or “stop”. Bus alerts read published RTS posts, not arrival estimates. Tap Talk each time; I do not keep listening.';
+export const VOICE_HELP = 'Say “from Reitz Union to Marston tomorrow at eight A M.” I will ask you to confirm before checking your journey. You can also say “read briefing”, “explain rain”, “wind”, “closures”, “bus alerts”, “bus alerts for route eleven”, “surroundings”, “repeat”, “cancel”, or “stop”. Bus alerts read published RTS posts, not arrival estimates. Tap Talk each time; I do not keep listening.';
 const numberWords={zero:0,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19,twenty:20,thirty:30,forty:40,fifty:50,sixty:60,ninety:90};
 export function normalizeSpeech(value) {
   return String(value??'').slice(0,1000).toLowerCase().replace(/[’']/g,'').replace(/(\d)\s*([ap])\s*\.?\s*m\b\.?/g,'$1 $2m').replace(/\ba\s*\.?\s*m\b\.?/g,'am').replace(/\bp\s*\.?\s*m\b\.?/g,'pm').replace(/[^a-z0-9:\s-]/g,' ').replace(/\s+/g,' ').trim();
@@ -61,8 +61,8 @@ export function draftStatus(draft,now=new Date()){
   const hour=draft.time.hour%12+(draft.time.meridiem==='pm'?12:0);
   const departure=`${draft.date}T${String(hour).padStart(2,'0')}:${String(draft.time.minute).padStart(2,'0')}`,date=parseDeparture(departure);
   if(!date||date<now||date>now.getTime()+6*86400000)return {ready:false,prompt:'That departure is in the past, invalid, or more than six days away. Please give a future day and time.'};
-  const summary=`${PLACE_NAMES[draft.origin]} to ${PLACE_NAMES[draft.destination]}, ${formatDate(date)} at ${timeLabel(date)} Eastern, with ${draft.duration} minutes outdoors${draft.durationFromForm?' using the duration currently in the form':''}.`;
-  return {ready:true,departure,summary,prompt:`I understood: ${summary} Is that correct? Choose Confirm trip, or tap Talk and say “confirm”. Nothing in your form has changed yet.`};
+  const summary=`${PLACE_NAMES[draft.origin]} to ${PLACE_NAMES[draft.destination]}, ${formatDate(date)} at ${timeLabel(date)} Eastern, with ${draft.duration} minutes outdoors${draft.durationFromForm?' using your current trip’s duration estimate':''}.`;
+  return {ready:true,departure,summary,prompt:`I understood: ${summary} Is that correct? Choose Confirm trip, or tap Talk and say “confirm”. No journey conditions have been requested yet.`};
 }
 export function parseVoiceIntent(value,{pending=null,duration=30,now=new Date()}={}){
   const text=normalizeSpeech(value).replace(/^please /,'').replace(/ please$/,'');
@@ -105,6 +105,10 @@ export function answerFromBrief(command,b,now=new Date()){
     return intro+`${w.description||'Weather description unavailable'}. ${rain} Air temperature: ${Number.isFinite(w.low)?`${w.low===w.high?w.low:`${w.low} to ${w.high}`} degrees Fahrenheit`:'unknown'}. Wind: ${w.wind||'unknown'}.`;
   }
   if(command==='closures')return intro+closureSpeech(b,now);
-  if(command==='surroundings')return intro+`The satellite vegetation information is from September 22, 2024. It is historical context, not current shade or a path inspection. ${b.sections.some(s=>s.steps)?'Steps are tagged on the mapped study path.':'No steps were identified in the available path tags; that does not establish step-free access.'} ${b.sections.some(s=>s.crossings)?'Crossings are mapped, but their accessibility and conditions are not verified.':''} Building entrances and the connections to the mapped path are not verified.`;
-  return 'I cannot establish whether a journey is safe. Current obstacles, puddles, pavement damage, safe crossings, shade, and entrance access are not verified. FieldLens is a preparation tool, not navigation or obstacle detection. It does not recommend modifying mobility equipment.';
+  if(command==='surroundings')return intro+b.sections.map((section,index)=>{
+    const part=['Starting out','Along the way','Near your destination'][index]||'Study section';
+    if(!Number.isFinite(section.coverage)||section.coverage<.5||!Number.isFinite(section.ndvi))return part+': insufficient usable historical vegetation data.';
+    return part+': '+(section.ndvi>=.5?'higher':section.ndvi>=.25?'mixed':'lower')+' historical vegetation signal, with '+Math.round(section.coverage*100)+' percent usable coverage.';
+  }).join(' ')+` The satellite vegetation information is from September 22, 2024. It is historical context, not current shade or a path inspection. ${b.sections.some(s=>s.steps)?'Steps are tagged on the mapped study path.':'No steps were identified in the available path tags; that does not establish step-free access.'} ${b.sections.some(s=>s.crossings)?'Crossings are mapped, but their accessibility and conditions are not verified.':''} Building entrances and the connections to the mapped path are not verified.`;
+  return 'I cannot establish whether a journey is safe. Current obstacles, puddles, pavement damage, safe crossings, shade, and entrance access are not verified. RealLens is a preparation tool, not navigation or obstacle detection. It does not recommend modifying mobility equipment.';
 }

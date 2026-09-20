@@ -1,4 +1,4 @@
-/* FieldLens dashboard: reference-inspired proportions, original campus content. */
+/* RealLens dashboard: reference-inspired proportions, original campus content. */
 :root:not([data-contrast=high]){--ink:#171b21;--muted:#5d6571;--accent:#22613f;--line:#e1e5e9;--paper:#fff;--canvas:#f6f7f9;--soft:#f1f4f3;--map-ground:#f1f3f5;--map-building:#e3e7eb;--map-green:#e7eee6;--map-line:#d7dde2;--map-path:#fff;--map-water:#dce9ee;--map-route:#198148;--map-closure:#bd563944}
 :root{--rail:216px}
 body{background:var(--canvas);color:var(--ink)}

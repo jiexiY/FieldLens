@@ -59,7 +59,7 @@ let data, viewer, tourTimer;
 
 $('#app').innerHTML = `
   <header class="topbar">
-    <a class="brand" href="./" aria-label="FieldLens home"><span class="brand-mark">${icon('globe')}</span>Field<span>Lens</span><span class="brand-divider"></span><small>FROM ORBIT TO GROUND</small></a>
+    <a class="brand" href="./" aria-label="RealLens home"><span class="brand-mark">${icon('globe')}</span>Field<span>Lens</span><span class="brand-divider"></span><small>FROM ORBIT TO GROUND</small></a>
     <nav aria-label="Main navigation"><button class="nav-link" id="about-btn">The field study ${icon('arrow')}</button><button class="source-button" id="sources-btn">${icon('layers')} Sources & method</button></nav>
   </header>
   <main>
@@ -125,8 +125,8 @@ $('#app').innerHTML = `
     </section>
     <section class="learning-strip"><span class="lesson-mark">${icon('globe')}</span><div><span class="eyebrow">BUILT ON A REAL LESSON</span><p>One place. Different perspectives. Better questions.</p></div><a href="https://geo-di-lab.github.io/emerge-lessons/docs/ch3/lesson3.html" target="_blank" rel="noreferrer">Explore the EMERGE lesson ${icon('arrow')}</a></section>
   </main>
-  <footer><span>FieldLens <span class="footer-dot">·</span> An environmental field study</span><span>USGS / USDA <span>+</span> Copernicus Sentinel-2 <span>+</span> EMERGE</span><button id="download-notes">Save field notes ${icon('download')}</button></footer>
-  <dialog id="info-dialog"><div class="dialog-top"><span class="eyebrow">THE FIELDLENS NOTEBOOK</span><button id="close-dialog" class="icon-button" aria-label="Close dialog">${icon('cross')}</button></div><div id="dialog-content"></div></dialog>
+  <footer><span>RealLens <span class="footer-dot">·</span> An environmental field study</span><span>USGS / USDA <span>+</span> Copernicus Sentinel-2 <span>+</span> EMERGE</span><button id="download-notes">Save field notes ${icon('download')}</button></footer>
+  <dialog id="info-dialog"><div class="dialog-top"><span class="eyebrow">THE REALLENS NOTEBOOK</span><button id="close-dialog" class="icon-button" aria-label="Close dialog">${icon('cross')}</button></div><div id="dialog-content"></div></dialog>
   <div class="toast" id="toast" role="status" hidden></div>
 `;
 
@@ -301,7 +301,7 @@ $('#scene').addEventListener('keydown', e=>{if(e.ctrlKey||e.metaKey||e.altKey)re
 $('#close-dialog').onclick=()=>$('#info-dialog').close();
 $('#info-dialog').onclick=e=>{if(e.target===$('#info-dialog'))$('#info-dialog').close();};
 function openDialog(html){$('#dialog-content').innerHTML=html;$('#info-dialog').showModal();}
-$('#about-btn').onclick=()=>openDialog(`<h2>One place, many ways of seeing.</h2><p>FieldLens is a small environmental field study of Lake Alice in Gainesville. Explore a real archived laser scan, inspect aerial imagery, and connect the landscape to two satellite observations.</p><p>It adapts <a href="https://geo-di-lab.github.io/emerge-lessons/docs/ch3/lesson3.html" target="_blank" rel="noreferrer">EMERGE Textbook 1, Chapter 3, Lesson 3: Vegetation & Water Indices</a> into a guided public resource.</p><div class="dialog-callout">The question: what can we learn from orbit, and what needs a closer look on the ground?</div><h3>How to explore</h3><p>Choose a viewpoint, read its field note, then follow the question into the satellite layers. Switch dates or drag the comparison slider. Tap a satellite pixel to keep its values in the notes panel.</p><p>The 3D canvas supports orbit, zoom, and pan. Focus it and use left/right arrow keys to move between viewpoints, or Home to reset.</p><p class="fineprint">A CityCamp prototype. Independently built using public data and the open EMERGE curriculum; not an official NASA, USGS, or UF product.</p>`);
+$('#about-btn').onclick=()=>openDialog(`<h2>One place, many ways of seeing.</h2><p>RealLens is a small environmental field study of Lake Alice in Gainesville. Explore a real archived laser scan, inspect aerial imagery, and connect the landscape to two satellite observations.</p><p>It adapts <a href="https://geo-di-lab.github.io/emerge-lessons/docs/ch3/lesson3.html" target="_blank" rel="noreferrer">EMERGE Textbook 1, Chapter 3, Lesson 3: Vegetation & Water Indices</a> into a guided public resource.</p><div class="dialog-callout">The question: what can we learn from orbit, and what needs a closer look on the ground?</div><h3>How to explore</h3><p>Choose a viewpoint, read its field note, then follow the question into the satellite layers. Switch dates or drag the comparison slider. Tap a satellite pixel to keep its values in the notes panel.</p><p>The 3D canvas supports orbit, zoom, and pan. Focus it and use left/right arrow keys to move between viewpoints, or Home to reset.</p><p class="fineprint">A CityCamp prototype. Independently built using public data and the open EMERGE curriculum; not an official NASA, USGS, or UF product.</p>`);
 $('#sources-btn').onclick=()=>{
   const scenes=data?.satellite.scenes||[];
   openDialog(`<h2>Follow the evidence.</h2><p>Every layer represents a particular observation, date, and scale. The 3D scan stays fixed while satellite dates change.</p>
@@ -313,7 +313,7 @@ $('#sources-btn').onclick=()=>{
   <div class="dialog-callout"><b>Reproducibility</b><p>The project includes its data preparation script, input catalog records, source links, and validation checks. No GLOBE observations or geoemerge package are used in this first version. The track permits other public environmental data.</p></div>`);
 };
 $('#download-notes').onclick=()=>{
-  const lines=['# FieldLens — Lake Alice','',`Exported ${new Date().toISOString()}`,'','Study question: What can we learn from orbit, and what needs a closer look on the ground?',''];
+  const lines=['# RealLens — Lake Alice','',`Exported ${new Date().toISOString()}`,'','Study question: What can we learn from orbit, and what needs a closer look on the ground?',''];
   views.forEach(v=>{lines.push(`## ${v.number}. ${v.title}`,v.body,'',v.prompt,v.explanation,'');});
   lines.push('## Method','EMERGE Textbook 1, Chapter 3, Lesson 3: https://geo-di-lab.github.io/emerge-lessons/docs/ch3/lesson3.html','NDVI=(NIR-red)/(NIR+red); NDWI=(green-NIR)/(green+NIR).','LiDAR geometry: 2018–2019; aerial center tile: 2023-01-26. Colors and geometry are separate acquisitions.','');
   data?.satellite.scenes.forEach(s=>lines.push(`${dateLabel(s.datetime)} — ${s.stacUrl}`));

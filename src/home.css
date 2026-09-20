@@ -1,4 +1,4 @@
-/* The blue-and-white home reference, adapted to FieldLens and readable contrast. */
+/* The blue-and-white home reference, adapted to RealLens and readable contrast. */
 :root:not([data-contrast=high]){--canvas:#f6f8f9;--accent:#315d70;--soft:#eaf1f4}
 :root{--rail:0px}
 .site-header.home-header{position:relative;inset:auto;height:auto;min-height:88px;width:100%;max-width:none;padding:0 40px;margin:0;border:0;background:var(--canvas);display:block;z-index:20}

@@ -2,21 +2,21 @@ import {parseVoiceIntent,draftStatus,VOICE_HELP} from './voice-model.js';
 import {createElevenInput,canCapture} from './eleven-input.js';
 import './voice-assistant.css';
 
-export function mountVoiceAssistant({root,getDuration,onConfirm,getAnswer,speak,stopSpeech,isSpeechSupported,isSpeaking,setProvider=()=>{},host=window}){
+export function mountVoiceAssistant({root,getDuration,onConfirm,onCancel=()=>{},getAnswer,speak,stopSpeech,isSpeechSupported,isSpeaking,setProvider=()=>{},host=window}){
   const $=s=>root.querySelector(s);
   const Recognition=host.SpeechRecognition||host.webkitSpeechRecognition;
   let pending=null,lastReply='',recognition=null,micToken=0,timer=null,version=0,busy=false,audioRequested=false,proposalAudio=false;
-  let provider='browser',configured=false,providerChosen=false;
-  root.innerHTML=`<div class="voice-intro"><div><p class="eyebrow">YOUR JOURNEY, IN YOUR WORDS</p><h2 id="voice-title">Talk to FieldLens.</h2><p>Try “From Reitz Union to Marston tomorrow at eight A M.”</p></div><div class="voice-actions"><button type="button" class="button button-primary" id="voice-talk" aria-describedby="voice-privacy voice-support"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8"/></svg><span>Talk · microphone off</span></button><button type="button" class="button button-outline" id="voice-stop">Stop audio / microphone</button></div></div>
+  let provider='browser',configured=false,providerChosen=false,answerVersion=0;
+  root.innerHTML=`<div class="voice-intro"><div><p class="eyebrow">YOUR JOURNEY, IN YOUR WORDS</p><h2 id="voice-title">One request at a time.</h2><p>Try “From Reitz Union to Marston tomorrow at eight A M.”</p></div><div class="voice-actions"><button type="button" class="button button-primary" id="voice-talk" aria-describedby="voice-privacy voice-support"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8"/></svg><span>Talk · microphone off</span></button><button type="button" class="button button-outline" id="voice-stop">Stop audio / microphone</button></div></div>
     <p class="voice-consent">Designed for blind and low-vision people. No map interaction required. Tap Talk to record one request; your selected speech provider processes the audio. No background listening.</p>
     <details class="voice-settings"><summary>Voice settings and privacy</summary><div class="voice-provider-row"><label for="voice-provider">Voice service</label><select id="voice-provider" aria-describedby="voice-privacy voice-support"><option value="browser">Browser voice · fallback</option><option value="elevenlabs" disabled>ElevenLabs · checking connection</option></select></div>
-    <p id="voice-privacy" class="voice-small">Microphone access starts only after you tap Talk. ElevenLabs mode records up to 20 seconds in memory, then sends it through FieldLens to ElevenLabs for transcription. Reply text is also sent there to create speech. FieldLens does not persist recordings or transcripts; ElevenLabs may retain them under its policies. Browser voice uses your browser’s provider, which may also process audio remotely. Stop cancels; no background listening.</p>
+    <p id="voice-privacy" class="voice-small">Microphone access starts only after you tap Talk. ElevenLabs mode records up to 20 seconds in memory, then sends it through RealLens to ElevenLabs for transcription. Reply text is also sent there to create speech. RealLens does not persist recordings or transcripts; ElevenLabs may retain them under its policies. Browser voice uses your browser’s provider, which may also process audio remotely. Stop cancels; no background listening.</p>
     </details><p class="voice-small">AI speech powered by <a href="https://elevenlabs.io" target="_blank" rel="noopener noreferrer">elevenlabs.io</a> · noncommercial prototype. <a href="https://elevenlabs.io/privacy-policy" target="_blank" rel="noopener noreferrer">ElevenLabs privacy policy</a>. Do not share sensitive information.</p>
-    <p id="voice-support" class="voice-small"></p><p id="voice-status" class="voice-status" role="status" aria-live="polite" aria-atomic="true">Microphone off. Use voice or the form below.</p>
-    <div id="voice-conversation" class="voice-conversation" hidden><p class="voice-transcript" id="voice-transcript"></p><h3 id="voice-reply-title">FieldLens reply</h3><div id="voice-reply" role="region" aria-labelledby="voice-reply-title" tabindex="0"></div><div class="voice-actions"><button type="button" class="button button-primary" id="voice-confirm" hidden>Confirm trip</button><button type="button" class="button button-outline" id="voice-cancel" hidden>Cancel proposed trip</button><button type="button" class="button button-outline" id="voice-read">Read reply aloud</button></div></div>
-    <details class="voice-details"><summary>Type a request or see supported commands</summary><form id="voice-text-form"><label for="voice-text">Trip or briefing question</label><div class="voice-text-row"><input id="voice-text" name="request" type="text" maxlength="1000" autocomplete="off" placeholder="From Reitz to Marston tomorrow at 8 AM"><button class="button button-outline" type="submit">Send request</button></div></form><p class="voice-small">Use Reitz Union, Marston, Smathers, Turlington, the Hub, or Newell. Say today, tomorrow, or a weekday and a time with A M or P M. Duration uses the form unless you say “for 30 minutes”, for example. You must confirm before the form changes.</p><div class="voice-chips" role="group" aria-label="Briefing questions"><button type="button" data-question="help">What can I say?</button><button type="button" data-question="rain">Explain rain</button><button type="button" data-question="wind">Wind</button><button type="button" data-question="closures">Closures</button><button type="button" data-question="surroundings">Surroundings</button><button type="button" data-question="unknowns">What’s unknown?</button><button type="button" data-question="briefing">Read briefing</button></div><p class="voice-small">This is a focused command assistant, not open-ended AI or turn-by-turn navigation. Answers use the prepared briefing only. Speech input varies by browser and may require internet. The typed request and form work without a microphone.</p></details>`;
+    <p id="voice-support" class="voice-small"></p><p id="voice-status" class="voice-status" role="status" aria-live="polite" aria-atomic="true">Microphone off. Speak or type a request.</p>
+    <div id="voice-conversation" class="voice-conversation" hidden><p class="voice-transcript" id="voice-transcript"></p><h3 id="voice-reply-title">RealLens reply</h3><div id="voice-reply" role="region" aria-labelledby="voice-reply-title" tabindex="0"></div><div class="voice-actions"><button type="button" class="button button-primary" id="voice-confirm" hidden>Confirm trip</button><button type="button" class="button button-outline" id="voice-cancel" hidden>Cancel proposed trip</button><button type="button" class="button button-outline" id="voice-read">Read reply aloud</button></div></div>
+    <details class="voice-details"><summary>Type a request or see supported commands</summary><form id="voice-text-form"><label for="voice-text">Trip or briefing question</label><div class="voice-text-row"><input id="voice-text" name="request" type="text" maxlength="1000" autocomplete="off" placeholder="From Reitz to Marston tomorrow at 8 AM"><button class="button button-outline" type="submit">Send request</button></div></form><p class="voice-small">Use Reitz Union, Marston, Smathers, Turlington, the Hub, or Newell. Say today, tomorrow, or a weekday and a time with A M or P M. Duration defaults to your current trip’s estimate (30 minutes if none). Say “for 30 minutes” to set it. Confirm before any journey conditions are requested.</p><div class="voice-chips" role="group" aria-label="Briefing questions"><button type="button" data-question="help">What can I say?</button><button type="button" data-question="rain">Explain rain</button><button type="button" data-question="wind">Wind</button><button type="button" data-question="closures">Closures</button><button type="button" data-question="surroundings">Surroundings</button><button type="button" data-question="unknowns">What’s unknown?</button><button type="button" data-question="briefing">Read briefing</button></div><p class="voice-small">This is a focused command assistant, not open-ended AI or turn-by-turn navigation. Answers use the prepared briefing only. Speech input varies by browser and may require internet. Typed requests and the separate trip form work without a microphone.</p></details>`;
   $('.voice-chips').insertAdjacentHTML('beforeend','<button type="button" data-question="bus alerts">Bus alerts</button>');
-  $('.voice-details>.voice-small:last-child').textContent='This is a focused command assistant, not open-ended AI or navigation. Environmental answers use your prepared briefing. “Bus alerts” and “bus alerts for route eleven” use the separate RTS source, even without a walking journey. Speech input varies by browser and may require internet. The typed request and form work without a microphone.';
+  $('.voice-details>.voice-small:last-child').textContent='This is a focused command assistant, not open-ended AI or navigation. Environmental answers use your prepared briefing. “Bus alerts” and “bus alerts for route eleven” use the separate RTS source, even without a walking journey. Speech input varies by browser and may require internet. Typed requests and the separate trip form work without a microphone.';
   const cloud=createElevenInput({host,onStatus:status,onResult:text=>accept(text,true),onError:message=>show(message,{audio:true}),onRecording(active){$('#voice-talk').querySelector('span').textContent=active?'Finish speaking':'Talk · microphone off';$('#voice-talk').setAttribute('aria-pressed',String(active));}});
   const inputSupported=()=>provider==='elevenlabs'?canCapture(host):!!Recognition;
   function providerUI(){
@@ -37,7 +37,7 @@ export function mountVoiceAssistant({root,getDuration,onConfirm,getAnswer,speak,
   }
   function updateDraft(){const result=pending?draftStatus(pending):null;$('#voice-confirm').hidden=!result?.ready;$('#voice-confirm').disabled=busy;$('#voice-talk').disabled=busy||!inputSupported();$('#voice-cancel').hidden=!pending;}
   function endMicrophone(){micToken++;cloud.cancel();clearTimeout(timer);timer=null;const old=recognition;recognition=null;if(old){old.onresult=null;old.onerror=null;old.onend=null;try{old.abort();}catch{}}$('#voice-talk').querySelector('span').textContent='Talk · microphone off';$('#voice-talk').setAttribute('aria-pressed','false');}
-  function stop(){endMicrophone();stopSpeech();audioRequested=false;status('Audio and microphone stopped. Tap Talk for another request.');}
+  function stop(){answerVersion++;endMicrophone();stopSpeech();audioRequested=false;status('Audio and microphone stopped. Tap Talk for another request.');}
   function invalidate(){version++;pending=null;busy=false;audioRequested=false;endMicrophone();stopSpeech();updateDraft();lastReply='';$('#voice-conversation').hidden=true;status('Journey details changed. Start a new voice request or use the form.');}
   async function confirm(audio){
     if(busy)return;
@@ -48,27 +48,31 @@ export function mountVoiceAssistant({root,getDuration,onConfirm,getAnswer,speak,
     if(thisVersion!==version)return;
     busy=false;pending=null;updateDraft();
     if(response?.cancelled){status('Request cancelled because the journey changed.');return;}
-    show(response?.error||response?.message||'Your briefing is ready below.',{audio:audioRequested&&!document.hidden,spoken:response?.speech||response?.error||response?.message});
+    show(response?.error||response?.message||'Your briefing is ready.',{audio:audioRequested&&!document.hidden,spoken:response?.speech||response?.error||response?.message});
   }
   function accept(text,audio=false,confidence=1){
+    const answerToken=++answerVersion;
     endMicrophone();stopSpeech();
     $('#voice-transcript').textContent=`${audio?'You said':'You typed'}: ${String(text).slice(0,1000)}`;
     const intent=parseVoiceIntent(text,{pending,duration:getDuration()});
     if(intent.kind==='command'&&intent.command==='stop'){stop();return;}
-    if(busy&&intent.kind==='command'&&intent.command==='cancel'){version++;pending=null;busy=false;stop();updateDraft();show('Voice follow-up cancelled. Your already-confirmed trip remains in the form. Change the form to choose another trip.');return;}
-    if(busy){show('A briefing is being prepared. Wait for it, or change the journey form to cancel it.',{audio});return;}
+    if(busy&&intent.kind==='command'&&intent.command==='cancel'){version++;pending=null;busy=false;onCancel();stop();updateDraft();show('Voice follow-up cancelled. No further reply will be read. Describe a new trip when ready.');return;}
+    if(busy){show('A briefing is being prepared. Wait for it, or type “cancel”.',{audio});return;}
     if(confidence>0&&confidence<.55&&!(intent.kind==='command'&&['stop','cancel'].includes(intent.command))){show('The speech service was uncertain. I did not act on that request. Please try again or type it.',{audio});return;}
     if(intent.kind==='trip'){pending=intent.draft;proposalAudio=audio;version++;updateDraft();show(intent.prompt,{audio});return;}
     if(intent.kind==='unknown'){pending=null;version++;updateDraft();show(intent.message,{audio});return;}
     const command=intent.command;
     if(command==='stop'){stop();return;}
-    if(command==='cancel'){pending=null;version++;updateDraft();show('Proposed trip cancelled. Your form has not changed.',{audio});return;}
+    if(command==='cancel'){pending=null;version++;updateDraft();show('Proposed trip cancelled. No journey conditions were requested.',{audio});return;}
     if(command==='confirm'){void confirm(audio);return;}
     if(command==='repeat'){show(lastReply||VOICE_HELP,{audio});return;}
     if(command==='help'){show(VOICE_HELP,{audio});return;}
     // A pending proposal never silently becomes the context of a weather answer.
     if(pending){show('Please confirm or cancel the proposed trip before asking about its conditions.',{audio});return;}
-    show(getAnswer(command,intent),{audio:audio||command==='briefing'||intent.readAloud===true});
+    status(command==='transit'?'Checking published RTS information. Microphone off.':'Preparing reply. Microphone off.');
+    Promise.resolve().then(()=>getAnswer(command,intent)).then(message=>{
+      if(answerToken===answerVersion)show(message,{audio:!document.hidden&&(audio||command==='briefing'||intent.readAloud===true)});
+    }).catch(()=>{if(answerToken===answerVersion)show('That information could not be checked. Try again.',{audio:audio&&!document.hidden});});
   }
   function start(){
     providerChosen=true;

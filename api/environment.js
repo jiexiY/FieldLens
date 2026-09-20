@@ -1,7 +1,7 @@
 // Only public, fixed-origin, read-only sources. Never forwards arbitrary URLs.
 import {getClosures as closures,plain} from '../server/closures.js';
 export {CLOSURE_SOURCE,sanitizeNotices,plain} from '../server/closures.js';
-const UA = 'FieldLens environmental journey prototype (https://fieldlens-pi.vercel.app)';
+const UA = 'RealLens environmental journey prototype (https://fieldlens-pi.vercel.app)';
 const cache = new Map();
 const TTL = 5 * 60 * 1000;
 async function json(url) {

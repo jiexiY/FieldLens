@@ -18,3 +18,5 @@
 .project-hero>*,.section-split>*,.source-list article>*,.project-access>*{min-width:0;overflow-wrap:anywhere}
 @media(max-width:760px){h1{font-size:clamp(2rem,11.7vw,5.5rem)}}
 @media(forced-colors:active){.primary-link,.open-app,.feature,.preview-journey,.brief-preview,.preview-icon,.preview-audio,.honest-note{border:1px solid CanvasText}}
+/* Product icon is part of the entire, keyboard-accessible demo link. */
+.primary-link img,.open-app img{border-radius:14px;flex-shrink:0}.open-app img{width:28px;height:28px}.open-app{display:inline-flex;align-items:center;gap:8px}.track-note{padding:26px 0;line-height:1.7;max-width:76ch}

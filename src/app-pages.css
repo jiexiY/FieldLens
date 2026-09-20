@@ -1,0 +1,16 @@
+:root{scroll-behavior:auto}
+.app-header{max-width:1060px;margin:auto;padding:22px 28px;display:flex;gap:20px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.app-header .brand{font-size:1.3rem}.app-header nav{display:flex;gap:16px;flex-wrap:wrap}.app-header a{min-height:44px;display:inline-flex;align-items:center}
+.app-main{max-width:920px;margin:0 auto;padding:44px 28px 72px;min-height:75vh}
+.page-heading{margin-bottom:30px}.page-heading h1{font-size:clamp(2.25rem,5vw,3.5rem);margin:8px 0 16px}.page-heading p{max-width:55ch;color:var(--muted)}
+.app-main .panel{padding:clamp(22px,4vw,40px);border-radius:24px;background:var(--paper);border:1px solid var(--line)}
+.app-main .page-actions{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}.app-main label{font-size:1rem}.app-main .field{margin-bottom:24px}.app-main fieldset{padding:0;border:0;min-width:0}
+.app-main legend{font-size:1.2rem;font-weight:650;margin-bottom:22px}.app-main .field-row{display:grid;grid-template-columns:1fr 1fr;gap:24px}.app-main .button{font-size:1rem;min-height:52px}.app-main .form-error{font-size:1rem}
+.app-main #journey-form{max-width:680px}.app-main .micro{font-size:.875rem}.app-footer{max-width:1004px;padding:20px 28px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}.app-footer a{min-height:44px;display:inline-flex;align-items:center}
+.app-main #voice-assistant,.app-main #transit{margin:0}.app-main .voice-intro{flex-wrap:wrap}.app-main .voice-status{font-size:1rem}
+.app-main .source-grid{grid-template-columns:1fr}.app-main .source-grid p{font-size:1rem}.app-main .source-grid h3{font-size:1.25rem}.app-main details{overflow-wrap:anywhere}
+.app-main .brief-tools .micro{margin-left:0}.app-main .brief-heading h2{font-size:1.75rem}.app-main .brief-heading{flex-wrap:wrap}
+.app-main .reading-settings{display:grid;gap:20px;max-width:600px}.app-main .reading-settings label{margin-bottom:8px}
+[hidden]{display:none!important}
+@media(max-width:600px){.app-header{padding:14px 18px;gap:8px;flex-wrap:wrap}.app-header nav{gap:16px}.app-main{padding:28px 18px 48px}.app-main .field-row{grid-template-columns:1fr;gap:0}.app-footer{padding:18px}.app-main .results>.card{padding:22px 18px}.app-main .badge{white-space:normal}.app-main .map-labels{flex-wrap:wrap}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;scroll-behavior:auto!important}}

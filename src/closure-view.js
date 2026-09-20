@@ -10,7 +10,7 @@ export function closureSummary(c){
 export function closureSpeech(b,now=new Date()){
   const feed=b.environment?.closures||{};
   const c=feed.fetchedAt&&now-Date.parse(feed.fetchedAt)>CLOSURE_STALE_MS?{...b.closures,status:'stale'}:b.closures;
-  const notices=c.matches.map(n=>`${n.title}. ${n.start||'Unknown start date'} to ${n.end||'unknown end date'}. ${n.description||n.location||'Review the official notice.'}${n.alternative?` UF travel note: ${n.alternative}.`:''}${n.accessibleAlternative?` UF accessibility note: ${n.accessibleAlternative}. This has not been independently checked by FieldLens.`:''}`).join(' ');
+  const notices=c.matches.map(n=>`${n.title}. ${n.start||'Unknown start date'} to ${n.end||'unknown end date'}. ${n.description||n.location||'Review the official notice.'}${n.alternative?` UF travel note: ${n.alternative}.`:''}${n.accessibleAlternative?` UF accessibility note: ${n.accessibleAlternative}. This has not been independently checked by RealLens.`:''}`).join(' ');
   return `${closureSummary(c)} ${c.status==='stale'?'Earlier, unverified notices: ':''}${notices} ${c.unmapped||0} other date-relevant notices have no usable matched polygon and cannot be ruled out. ${feed?.fetchedAt?`Last successful source check ${formatDate(feed.fetchedAt,{hour:'numeric',minute:'2-digit'})} Eastern.`:'No successful source check.'} Published notices may lag conditions on the ground. Review the official source before travel.`;
 }
 function notice(n,unmapped=false){

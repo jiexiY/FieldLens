@@ -1,5 +1,5 @@
 // Runs on the audio thread; no network, storage, speech interpretation, or output.
-class FieldLensCapture extends AudioWorkletProcessor {
+class RealLensCapture extends AudioWorkletProcessor {
   constructor(){super();this.samples=new Float32Array(2048);this.position=0;}
   process(inputs){
     const input=inputs[0]?.[0];if(!input)return true;
@@ -7,4 +7,4 @@ class FieldLensCapture extends AudioWorkletProcessor {
     return true;
   }
 }
-registerProcessor('fieldlens-capture',FieldLensCapture);
+registerProcessor('fieldlens-capture',RealLensCapture);

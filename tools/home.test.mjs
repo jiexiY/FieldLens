@@ -11,27 +11,23 @@ const page=name=>readFileSync(new URL('../'+name,import.meta.url),'utf8');
 test('Start-screen labels reference visible names and hidden concise descriptions',()=>{
   const html=page('welcome.html');
   assert.ok(html.includes('role="group" aria-label="Home actions"'));
-  assert.ok(html.includes('class="sr-only">FieldLens home</h1>'));
+  assert.ok(html.includes('class="sr-only">RealLens home</h1>'));
   for(const id of ['plan','talk','conditions','bus']){
     assert.ok(html.includes('aria-labelledby="'+id+'-label" aria-describedby="'+id+'-hint"'));
     assert.ok(html.includes('id="'+id+'-label"'));
     assert.ok(html.includes('id="'+id+'-hint" hidden>'));
   }
 });
-test('Workspace home cards separate action names from their captions',()=>{
-  const script=page('src/journey.js');
-  assert.ok(script.includes('class="home-actions" role="group" aria-label="Home actions"'));
-  for(const id of ['plan','talk','notices','explore']){
-    assert.ok(script.includes('aria-labelledby="home-'+id+'-label" aria-describedby="home-'+id+'-hint"'));
-    assert.ok(script.includes('id="home-'+id+'-label"'));
-    assert.ok(script.includes('id="home-'+id+'-hint"'));
-  }
+test('Home actions navigate to separate pages, not sections',()=>{
+  const html=page('welcome.html');
+  for(const name of ['plan','talk','conditions','bus'])assert.ok(html.includes('href="/'+name+'"'));
+  assert.doesNotMatch(html,/href="\/\#/);
 });
 test('App entry has exactly four static action links and no promotional chrome',()=>{
   const html=page('welcome.html');
   assert.equal((html.match(/class="welcome-tile /g)||[]).length,4);
   assert.equal((html.match(/<a\s/g)||[]).length,4);
-  for(const label of ['Plan a trip','Talk to FieldLens','Check conditions','Bus alerts'])assert.ok(html.includes(label));
+  for(const label of ['Plan a trip','Talk to RealLens','Check conditions','Bus alerts'])assert.ok(html.includes(label));
   assert.doesNotMatch(html,/<header|<footer|<nav|<dialog|<p[\s>]/);
   assert.ok(html.includes('id="welcome-title"')&&html.includes('aria-labelledby="welcome-title"'));
 });
@@ -41,16 +37,20 @@ test('Start screen only reads existing preferences and never starts data or voic
   assert.match(script,/readingPreferences/);
   assert.match(page('src/welcome.css'),/min-height:100dvh/);
 });
-test('Project page keeps honest boundaries and routes its primary actions to the clean start screen',()=>{
-  const html=page('project.html');
-  assert.equal((html.match(/class="primary-link" href="\/welcome"/g)||[]).length,2);
+test('Root product intro has icon demo links and honest boundaries',()=>{
+  const html=page('index.html');
+  assert.equal((html.match(/class="primary-link" href="\/demo"/g)||[]).length,2);
+  assert.ok(html.includes('Try it out'));
+  assert.equal(html,page('project.html'));
   for(const value of ['National Weather Service','UF Campus Closures','Gainesville RTS','Sentinel-2 + EMERGE','not a current conditions report','not yet been evaluated','Not live bus positions','September 22, 2024'])assert.ok(html.includes(value),value);
-  assert.doesNotMatch(html,/<script/);
+  assert.doesNotMatch(html,/src="\/src\/journey.js"/);
   assert.ok(html.includes('rel="canonical"'));
 });
-test('Both production and local builds resolve the two separate page roles',()=>{
+test('Both production and local builds resolve separate product and feature pages',()=>{
   const rewrites=JSON.parse(page('vercel.json')).rewrites;
-  for(const route of ['welcome','project'])assert.ok(rewrites.some(r=>r.source==='/'+route&&r.destination==='/'+route+'.html'));
-  assert.ok(page('vite.config.js').includes("new URL('./project.html'"));
-  assert.ok(page('src/journey.js').includes('class="home-about" href="/project"'));
+  for(const route of ['welcome','project','demo','plan','conditions','talk','bus','sources','settings']){
+    assert.ok(rewrites.some(r=>r.source==='/'+route&&r.destination==='/'+route+'.html'));
+    assert.ok(page('vite.config.js').includes("'"+route+"'"));
+    assert.match(page(route+'.html'),/<title>[^<]*RealLens/);
+  }
 });
